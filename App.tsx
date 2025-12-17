@@ -678,7 +678,7 @@ const AdminDashboard = ({
             </div>
 
             {editingCar || carFormData.id ? renderVehicleForm() : (
-              <div className="bg-slate-900 border border-slate-800 shadow-sm overflow-hidden">
+              <div className="bg-slate-900 border border-slate-800 shadow-sm overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-slate-800 border-b border-slate-700">

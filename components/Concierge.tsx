@@ -106,7 +106,7 @@ const Concierge: React.FC = () => {
       </button>
 
       {/* Chat Window */}
-      <div className={`fixed bottom-6 right-6 z-50 w-full max-w-sm bg-slate-900 border border-slate-700 rounded-xl shadow-2xl transition-all duration-300 transform origin-bottom-right flex flex-col ${
+      <div className={`fixed bottom-4 right-4 z-50 w-[calc(100%-2rem)] sm:w-full max-w-sm bg-slate-900 border border-slate-700 rounded-xl shadow-2xl transition-all duration-300 transform origin-bottom-right flex flex-col ${
         isOpen ? 'scale-100 opacity-100' : 'scale-0 opacity-0 pointer-events-none'
       }`} style={{ height: '500px' }}>
         
