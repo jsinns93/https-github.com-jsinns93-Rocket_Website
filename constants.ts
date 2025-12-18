@@ -1,5 +1,5 @@
 
-import { Car, SiteContent } from './types';
+import { Car, SiteContent, Event } from './types';
 
 export const APP_NAME = "Rocket Motor Company";
 
@@ -10,6 +10,25 @@ export const DEFAULT_CATEGORIES = [
   'Modern Classic',
   'Truck',
   'Wagon'
+];
+
+export const DEFAULT_EVENTS: Event[] = [
+  {
+    id: 'e1',
+    title: 'Morning Fuel: Cars & Coffee',
+    date: 'Oct 15, 2023',
+    location: 'RMC Main Garage',
+    description: 'The monthly gathering of Jakarta\'s finest air-cooled and vintage iron. High-octane conversation and specialty brews.',
+    image: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?q=80&w=2070&auto=format&fit=crop'
+  },
+  {
+    id: 'e2',
+    title: 'Sentul Track Day Invitational',
+    date: 'Nov 02, 2023',
+    location: 'Sentul International Circuit',
+    description: 'An exclusive track day for our performance clientele. Limited slots for pre-1990 sports cars.',
+    image: 'https://images.unsplash.com/photo-1541890289-b86df5bafd81?q=80&w=2070&auto=format&fit=crop'
+  }
 ];
 
 export const DEFAULT_SITE_CONTENT: SiteContent = {
@@ -42,7 +61,7 @@ export const CARS: Car[] = [
     price: 85000,
     type: 'Classic 4x4',
     images: [
-      'https://images.unsplash.com/photo-1552837892-06764536294d?q=80&w=2070&auto=format&fit=crop', // Main
+      'https://images.unsplash.com/photo-1552837892-06764536294d?q=80&w=2070&auto=format&fit=crop', 
       'https://images.unsplash.com/photo-1629810793608-7243c448c414?q=80&w=2070&auto=format&fit=crop'
     ],
     description: 'A stunning, frame-off restored 1974 Ford Bronco in Brittany Blue. This uncut gem features a rebuilt 302 V8 and a modern suspension lift, blending classic ruggedness with drivable comfort. A true collector\'s piece.',

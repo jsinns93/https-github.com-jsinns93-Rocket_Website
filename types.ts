@@ -24,8 +24,8 @@ export interface Car {
   model: string;
   year: number;
   price: number;
-  type: string; // Changed from Enum to string to support dynamic categories
-  images: string[]; // Changed from imageUrl to images array
+  type: string; 
+  images: string[]; 
   description: string;
   specs: CarSpecs;
   features: string[];
@@ -43,6 +43,15 @@ export interface HeroSlide {
   image: string;
   title: string;
   subtitle: string;
+}
+
+export interface Event {
+  id: string;
+  title: string;
+  date: string;
+  location: string;
+  description: string;
+  image: string;
 }
 
 export interface SiteContent {

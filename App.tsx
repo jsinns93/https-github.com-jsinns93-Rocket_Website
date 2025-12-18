@@ -1,15 +1,14 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { CARS, DEFAULT_CATEGORIES, DEFAULT_SITE_CONTENT } from './constants';
-import { Car, SiteContent, HeroSlide } from './types';
+import { CARS, DEFAULT_CATEGORIES, DEFAULT_SITE_CONTENT, DEFAULT_EVENTS } from './constants';
+import { Car, SiteContent, HeroSlide, Event as RmcEvent } from './types';
 import Concierge from './components/Concierge';
 import ComparisonChart from './components/ComparisonChart';
-import { Search, Info, Gauge, Zap, DollarSign, Menu, X, ArrowRight, ChevronDown, Check, Fuel, Calendar, ShieldCheck, Trophy, Wrench, MapPin, Phone, Globe, Clock, Sparkles, Lock, LayoutDashboard, LogOut, Plus, Trash2, Edit, Save, Image as ImageIcon, Layers, FileText, Settings, Upload, Instagram, Facebook, Youtube, MonitorPlay } from 'lucide-react';
+import { Search, Info, Gauge, Zap, DollarSign, Menu, X, ArrowRight, ChevronDown, Check, Fuel, Calendar, ShieldCheck, Trophy, Wrench, MapPin, Phone, Globe, Clock, Sparkles, Lock, LayoutDashboard, LogOut, Plus, Trash2, Edit, Save, Image as ImageIcon, Layers, FileText, Settings, Upload, Instagram, Facebook, Youtube, MonitorPlay, Ticket } from 'lucide-react';
 
 // --- Sub-components ---
 
 const BrandLogo = ({ className = "h-10", theme = 'light' }: { className?: string, theme?: 'dark' | 'light' }) => (
   <div className="flex items-center gap-3 select-none">
-    {/* Stylized Rocket Icon */}
     <svg viewBox="0 0 100 100" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M50 5L85 85L50 70L15 85L50 5Z" fill="#b4914b" />
       <path d="M50 78L50 95" stroke="#b4914b" strokeWidth="4" strokeLinecap="round" />
@@ -53,6 +52,7 @@ const Navbar = ({ onNavigate }: { onNavigate: (page: string) => void }) => {
             <button onClick={() => onNavigate('home')} className="text-slate-300 hover:text-rocket-500 transition-colors text-sm font-bold uppercase tracking-wider">Home</button>
             <button onClick={() => onNavigate('showroom')} className="text-slate-300 hover:text-rocket-500 transition-colors text-sm font-bold uppercase tracking-wider">The Collection</button>
             <button onClick={() => onNavigate('services')} className="text-slate-300 hover:text-rocket-500 transition-colors text-sm font-bold uppercase tracking-wider">Services</button>
+            <button onClick={() => onNavigate('events')} className="text-slate-300 hover:text-rocket-500 transition-colors text-sm font-bold uppercase tracking-wider">Events</button>
             <button onClick={() => onNavigate('compare')} className="text-slate-300 hover:text-rocket-500 transition-colors text-sm font-bold uppercase tracking-wider">Compare</button>
             <button className="bg-rocket-500 text-slate-950 px-6 py-2 rounded-none font-bold text-sm uppercase tracking-wider hover:bg-white transition-colors transform skew-x-[-10deg]">
               <span className="transform skew-x-[10deg] inline-block">Inquire</span>
@@ -67,13 +67,13 @@ const Navbar = ({ onNavigate }: { onNavigate: (page: string) => void }) => {
         </div>
       </div>
       
-      {/* Mobile Menu */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-slate-900 border-t border-slate-800 shadow-lg">
           <div className="px-4 pt-2 pb-4 space-y-1">
              <button onClick={() => { onNavigate('home'); setMobileMenuOpen(false); }} className="block w-full text-left py-3 text-base font-bold text-slate-300 border-b border-slate-800 font-display uppercase">Home</button>
              <button onClick={() => { onNavigate('showroom'); setMobileMenuOpen(false); }} className="block w-full text-left py-3 text-base font-bold text-slate-300 border-b border-slate-800 font-display uppercase">The Collection</button>
              <button onClick={() => { onNavigate('services'); setMobileMenuOpen(false); }} className="block w-full text-left py-3 text-base font-bold text-slate-300 border-b border-slate-800 font-display uppercase">Services</button>
+             <button onClick={() => { onNavigate('events'); setMobileMenuOpen(false); }} className="block w-full text-left py-3 text-base font-bold text-slate-300 border-b border-slate-800 font-display uppercase">Events</button>
              <button onClick={() => { onNavigate('compare'); setMobileMenuOpen(false); }} className="block w-full text-left py-3 text-base font-bold text-slate-300 font-display uppercase">Compare</button>
           </div>
         </div>
@@ -85,7 +85,6 @@ const Navbar = ({ onNavigate }: { onNavigate: (page: string) => void }) => {
 const Hero = ({ onShopNow, content, inventory }: { onShopNow: () => void, content: SiteContent['hero'], inventory: Car[] }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  // Use custom slides if available, otherwise fallback to top 5 inventory items
   const slides = useMemo(() => {
     if (content.slides && content.slides.length > 0) {
       return content.slides;
@@ -110,7 +109,6 @@ const Hero = ({ onShopNow, content, inventory }: { onShopNow: () => void, conten
 
   return (
     <div className="relative h-[700px] overflow-hidden bg-slate-950">
-      {/* Background Slides */}
       {slides.map((slide, index) => (
         <div 
           key={slide.id}
@@ -126,11 +124,9 @@ const Hero = ({ onShopNow, content, inventory }: { onShopNow: () => void, conten
         </div>
       ))}
 
-      {/* Global Gradients (Static) */}
       <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-transparent pointer-events-none" />
       <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 to-transparent pointer-events-none" />
       
-      {/* Content */}
       <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-center items-start z-10">
         <span className="text-rocket-500 font-bold tracking-[0.3em] text-sm md:text-base mb-4 uppercase">{content.estYear}</span>
         <h1 className="text-6xl md:text-8xl text-white font-display font-bold leading-none mb-6 uppercase tracking-tighter" dangerouslySetInnerHTML={{ __html: content.title.replace('.', '<span class="text-rocket-500">.</span>') }}>
@@ -151,7 +147,6 @@ const Hero = ({ onShopNow, content, inventory }: { onShopNow: () => void, conten
           </button>
         </div>
 
-        {/* Slide Indicators / Current Car Label */}
         {slides.length > 0 && currentHero && (
           <div className="absolute bottom-10 right-4 md:right-8 flex flex-col items-end gap-2">
               <div className="flex gap-2 mb-2">
@@ -213,6 +208,27 @@ const CarCard: React.FC<{ car: Car; onClick: () => void }> = ({ car, onClick }) 
   );
 };
 
+const EventCard: React.FC<{ event: RmcEvent }> = ({ event }) => (
+  <div className="group relative bg-slate-950 border border-slate-800 overflow-hidden shadow-xl hover:border-rocket-500 transition-all duration-500">
+    <div className="h-48 overflow-hidden relative">
+      <img src={event.image} alt={event.title} className="w-full h-full object-cover opacity-60 group-hover:scale-110 transition-transform duration-700 grayscale hover:grayscale-0" />
+      <div className="absolute top-4 right-4 bg-rocket-500 text-slate-950 text-[10px] font-bold uppercase tracking-[0.2em] px-3 py-1.5 shadow-lg transform skew-x-[-15deg]">
+        <span className="transform skew-x-[15deg] block">{event.date}</span>
+      </div>
+    </div>
+    <div className="p-6">
+      <div className="flex items-center gap-2 text-rocket-500 text-[10px] font-bold uppercase tracking-widest mb-3">
+        <MapPin className="w-3 h-3" /> {event.location}
+      </div>
+      <h3 className="text-xl font-display font-bold text-white uppercase mb-3 leading-tight group-hover:text-rocket-500 transition-colors">{event.title}</h3>
+      <p className="text-slate-500 text-sm font-light leading-relaxed mb-6 line-clamp-2">{event.description}</p>
+      <button className="flex items-center gap-2 text-white text-xs font-bold uppercase tracking-widest group/btn">
+        Register Interest <ArrowRight className="w-3 h-3 group-hover/btn:translate-x-1 transition-transform" />
+      </button>
+    </div>
+  </div>
+);
+
 const CarDetailModal = ({ car, onClose }: { car: Car; onClose: () => void }) => {
   const [activeImage, setActiveImage] = useState(0);
 
@@ -239,7 +255,6 @@ const CarDetailModal = ({ car, onClose }: { car: Car; onClose: () => void }) => 
                   </div>
               </div>
            </div>
-           {/* Gallery Thumbs */}
            <div className="p-4 bg-slate-900 flex gap-3 overflow-x-auto border-b border-slate-800">
              {car.images.map((img, idx) => (
                <button 
@@ -314,6 +329,8 @@ const AdminDashboard = ({
   setCategories,
   siteContent,
   setSiteContent,
+  events,
+  setEvents,
   onLogout 
 }: { 
   cars: Car[], 
@@ -322,12 +339,14 @@ const AdminDashboard = ({
   setCategories: (cats: string[]) => void,
   siteContent: SiteContent,
   setSiteContent: (content: SiteContent) => void,
+  events: RmcEvent[],
+  setEvents: (ev: RmcEvent[]) => void,
   onLogout: () => void 
 }) => {
-  const [activeTab, setActiveTab] = useState<'vehicles' | 'categories' | 'content' | 'carousel'>('vehicles');
+  const [activeTab, setActiveTab] = useState<'vehicles' | 'categories' | 'content' | 'carousel' | 'events'>('vehicles');
   const [editingCar, setEditingCar] = useState<Car | null>(null);
+  const [editingEvent, setEditingEvent] = useState<RmcEvent | null>(null);
 
-  // --- Vehicle Logic ---
   const initialCarState: Car = {
     id: '',
     make: '',
@@ -349,7 +368,17 @@ const AdminDashboard = ({
     features: []
   };
 
+  const initialEventState: RmcEvent = {
+    id: '',
+    title: '',
+    date: '',
+    location: '',
+    description: '',
+    image: ''
+  };
+
   const [carFormData, setCarFormData] = useState<Car>(initialCarState);
+  const [eventFormData, setEventFormData] = useState<RmcEvent>(initialEventState);
 
   const handleEditCar = (car: Car) => {
     setEditingCar(car);
@@ -377,6 +406,47 @@ const AdminDashboard = ({
     }
     setEditingCar(null);
     setCarFormData(initialCarState);
+  };
+
+  // Event Handlers
+  const handleEditEvent = (ev: RmcEvent) => {
+    setEditingEvent(ev);
+    setEventFormData(ev);
+  };
+
+  const handleCreateEvent = () => {
+    setEditingEvent(null);
+    setEventFormData({ ...initialEventState, id: Date.now().toString() });
+  };
+
+  const handleDeleteEvent = (id: string) => {
+    if (window.confirm('Delete this event?')) {
+      setEvents(events.filter(e => e.id !== id));
+    }
+  };
+
+  const handleSaveEvent = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingEvent) {
+      setEvents(events.map(ev => ev.id === editingEvent.id ? eventFormData : ev));
+    } else {
+      setEvents([...events, { ...eventFormData, id: Date.now().toString() }]);
+    }
+    setEditingEvent(null);
+    setEventFormData(initialEventState);
+  };
+
+  const handleEventImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === 'string') {
+          setEventFormData(prev => ({ ...prev, image: reader.result as string }));
+        }
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const updateSpec = (field: keyof typeof carFormData.specs, value: string | number) => {
@@ -421,7 +491,6 @@ const AdminDashboard = ({
     }
   };
 
-  // --- Category Logic ---
   const [newCategory, setNewCategory] = useState('');
   
   const handleAddCategory = () => {
@@ -432,19 +501,17 @@ const AdminDashboard = ({
   };
 
   const handleDeleteCategory = (cat: string) => {
-    if (window.confirm(`Delete category "${cat}"? Vehicles with this category will be preserved but unchecked.`)) {
+    if (window.confirm(`Delete category "${cat}"? Vehicles with this category will be preserved.`)) {
       setCategories(categories.filter(c => c !== cat));
     }
   };
 
-  // --- Content Logic ---
   const [contentForm, setContentForm] = useState<SiteContent>(siteContent);
   const handleSaveContent = () => {
     setSiteContent(contentForm);
     alert('Site content updated successfully!');
   };
 
-  // --- Carousel Logic ---
   const handleAddSlide = () => {
     const newSlide: HeroSlide = { 
       id: Date.now().toString(), 
@@ -524,6 +591,12 @@ const AdminDashboard = ({
           <MonitorPlay className="w-4 h-4" /> Carousel
         </button>
         <button 
+          onClick={() => { setActiveTab('events'); setEditingEvent(null); setEventFormData(initialEventState); }}
+          className={`w-full text-left px-4 py-3 rounded-md flex items-center gap-3 font-bold uppercase text-xs tracking-wider transition-all ${activeTab === 'events' ? 'bg-rocket-500 text-slate-950' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
+        >
+          <Ticket className="w-4 h-4" /> Events
+        </button>
+        <button 
           onClick={() => setActiveTab('categories')}
           className={`w-full text-left px-4 py-3 rounded-md flex items-center gap-3 font-bold uppercase text-xs tracking-wider transition-all ${activeTab === 'categories' ? 'bg-rocket-500 text-slate-950' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
         >
@@ -553,29 +626,29 @@ const AdminDashboard = ({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Year</label>
-              <input type="number" required value={carFormData.year} onChange={e => setCarFormData({...carFormData, year: parseInt(e.target.value)})} className="w-full p-2 bg-slate-800 border border-slate-700 text-white rounded-none focus:border-rocket-500 outline-none" />
+              <input type="number" required value={carFormData.year} onChange={e => setCarFormData({...carFormData, year: parseInt(e.target.value)})} className="w-full p-2 bg-slate-800 border border-slate-700 text-white focus:border-rocket-500 outline-none" />
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Make</label>
-              <input type="text" required value={carFormData.make} onChange={e => setCarFormData({...carFormData, make: e.target.value})} className="w-full p-2 bg-slate-800 border border-slate-700 text-white rounded-none focus:border-rocket-500 outline-none" />
+              <input type="text" required value={carFormData.make} onChange={e => setCarFormData({...carFormData, make: e.target.value})} className="w-full p-2 bg-slate-800 border border-slate-700 text-white focus:border-rocket-500 outline-none" />
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Model</label>
-              <input type="text" required value={carFormData.model} onChange={e => setCarFormData({...carFormData, model: e.target.value})} className="w-full p-2 bg-slate-800 border border-slate-700 text-white rounded-none focus:border-rocket-500 outline-none" />
+              <input type="text" required value={carFormData.model} onChange={e => setCarFormData({...carFormData, model: e.target.value})} className="w-full p-2 bg-slate-800 border border-slate-700 text-white focus:border-rocket-500 outline-none" />
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Category</label>
-              <select value={carFormData.type} onChange={e => setCarFormData({...carFormData, type: e.target.value})} className="w-full p-2 bg-slate-800 border border-slate-700 text-white rounded-none focus:border-rocket-500 outline-none">
+              <select value={carFormData.type} onChange={e => setCarFormData({...carFormData, type: e.target.value})} className="w-full p-2 bg-slate-800 border border-slate-700 text-white focus:border-rocket-500 outline-none">
                 {categories.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
           </div>
 
           <div>
-             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Image Gallery (Top is Main)</label>
+             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Image Gallery</label>
              <div className="space-y-3 mb-4">
                {carFormData.images.map((img, idx) => (
                  <div key={idx} className="flex items-center gap-3 bg-slate-800 p-2 border border-slate-700">
@@ -589,7 +662,7 @@ const AdminDashboard = ({
                    <input 
                       type="text" 
                       placeholder="Image URL..." 
-                      value={img.startsWith('data:') ? '(Uploaded Image Data)' : img} 
+                      value={img.startsWith('data:') ? '(Uploaded Image)' : img} 
                       readOnly={img.startsWith('data:')}
                       onChange={e => handleImageChange(idx, e.target.value)} 
                       className={`flex-1 p-2 bg-slate-900 border border-slate-700 text-slate-300 text-xs focus:border-rocket-500 outline-none ${img.startsWith('data:') ? 'italic text-slate-500 cursor-not-allowed' : ''}`}
@@ -599,11 +672,11 @@ const AdminDashboard = ({
                ))}
              </div>
              <div className="flex gap-4">
-                <button type="button" onClick={addImageField} className="text-xs font-bold text-rocket-500 hover:text-white uppercase tracking-wider flex items-center gap-2 px-4 py-2 border border-slate-700 hover:border-rocket-500 bg-slate-800">
+                <button type="button" onClick={addImageField} className="text-xs font-bold text-rocket-500 hover:text-white uppercase tracking-wider flex items-center gap-2 px-4 py-2 border border-slate-700 bg-slate-800">
                     <Plus className="w-3 h-3" /> Add URL
                 </button>
-                <label className="text-xs font-bold text-rocket-500 hover:text-white uppercase tracking-wider flex items-center gap-2 px-4 py-2 border border-slate-700 hover:border-rocket-500 bg-slate-800 cursor-pointer">
-                    <Upload className="w-3 h-3" /> Upload from Computer
+                <label className="text-xs font-bold text-rocket-500 hover:text-white uppercase tracking-wider flex items-center gap-2 px-4 py-2 border border-slate-700 bg-slate-800 cursor-pointer">
+                    <Upload className="w-3 h-3" /> Upload Local
                     <input type="file" multiple accept="image/*" onChange={handleFileUpload} className="hidden" />
                 </label>
              </div>
@@ -611,7 +684,7 @@ const AdminDashboard = ({
 
           <div>
              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Description</label>
-             <textarea rows={4} required value={carFormData.description} onChange={e => setCarFormData({...carFormData, description: e.target.value})} className="w-full p-2 bg-slate-800 border border-slate-700 text-white rounded-none focus:border-rocket-500 outline-none" />
+             <textarea rows={4} required value={carFormData.description} onChange={e => setCarFormData({...carFormData, description: e.target.value})} className="w-full p-2 bg-slate-800 border border-slate-700 text-white focus:border-rocket-500 outline-none" />
           </div>
 
           <div className="border-t border-slate-800 pt-6">
@@ -619,39 +692,69 @@ const AdminDashboard = ({
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
                  <label className="block text-xs font-bold text-slate-500 mb-1">Engine</label>
-                 <input type="text" value={carFormData.specs.engine} onChange={e => updateSpec('engine', e.target.value)} className="w-full p-2 bg-slate-800 border border-slate-700 text-white rounded-none text-sm" />
+                 <input type="text" value={carFormData.specs.engine} onChange={e => updateSpec('engine', e.target.value)} className="w-full p-2 bg-slate-800 border border-slate-700 text-white text-sm" />
               </div>
               <div>
-                 <label className="block text-xs font-bold text-slate-500 mb-1">Horsepower</label>
-                 <input type="number" value={carFormData.specs.horsepower} onChange={e => updateSpec('horsepower', parseInt(e.target.value))} className="w-full p-2 bg-slate-800 border border-slate-700 text-white rounded-none text-sm" />
+                 <label className="block text-xs font-bold text-slate-500 mb-1">HP</label>
+                 <input type="number" value={carFormData.specs.horsepower} onChange={e => updateSpec('horsepower', parseInt(e.target.value))} className="w-full p-2 bg-slate-800 border border-slate-700 text-white text-sm" />
               </div>
               <div>
-                 <label className="block text-xs font-bold text-slate-500 mb-1">0-60 (sec)</label>
-                 <input type="number" step="0.1" value={carFormData.specs.zeroToSixty} onChange={e => updateSpec('zeroToSixty', parseFloat(e.target.value))} className="w-full p-2 bg-slate-800 border border-slate-700 text-white rounded-none text-sm" />
-              </div>
-              <div>
-                 <label className="block text-xs font-bold text-slate-500 mb-1">Top Speed (mph)</label>
-                 <input type="number" value={carFormData.specs.topSpeedMph} onChange={e => updateSpec('topSpeedMph', parseInt(e.target.value))} className="w-full p-2 bg-slate-800 border border-slate-700 text-white rounded-none text-sm" />
+                 <label className="block text-xs font-bold text-slate-500 mb-1">0-60</label>
+                 <input type="number" step="0.1" value={carFormData.specs.zeroToSixty} onChange={e => updateSpec('zeroToSixty', parseFloat(e.target.value))} className="w-full p-2 bg-slate-800 border border-slate-700 text-white text-sm" />
               </div>
               <div>
                  <label className="block text-xs font-bold text-slate-500 mb-1">Mileage</label>
-                 <input type="number" value={carFormData.specs.mileage} onChange={e => updateSpec('mileage', parseInt(e.target.value))} className="w-full p-2 bg-slate-800 border border-slate-700 text-white rounded-none text-sm" />
+                 <input type="number" value={carFormData.specs.mileage} onChange={e => updateSpec('mileage', parseInt(e.target.value))} className="w-full p-2 bg-slate-800 border border-slate-700 text-white text-sm" />
               </div>
             </div>
           </div>
           
-          <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Features (Comma separated)</label>
-            <textarea 
-              rows={2} 
-              value={carFormData.features.join(', ')} 
-              onChange={e => setCarFormData({...carFormData, features: e.target.value.split(',').map(s => s.trim())})} 
-              className="w-full p-2 bg-slate-800 border border-slate-700 text-white rounded-none focus:border-rocket-500 outline-none" 
-            />
-          </div>
-
           <button type="submit" className="bg-rocket-500 text-slate-950 px-8 py-3 font-bold uppercase tracking-widest hover:bg-white transition-colors flex items-center gap-2">
             <Save className="w-4 h-4" /> Save Record
+          </button>
+      </form>
+    </div>
+  );
+
+  const renderEventForm = () => (
+    <div className="bg-slate-900 p-8 border border-slate-800 shadow-sm animate-fade-in">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-display font-bold text-white uppercase">{editingEvent ? 'Edit Event' : 'Add New Event'}</h2>
+        <button onClick={() => { setEditingEvent(null); setEventFormData(initialEventState); }} className="text-slate-400 hover:text-white text-xs font-bold uppercase">Cancel</button>
+      </div>
+      <form onSubmit={handleSaveEvent} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Event Title</label>
+              <input type="text" required value={eventFormData.title} onChange={e => setEventFormData({...eventFormData, title: e.target.value})} className="w-full p-3 bg-slate-800 border border-slate-700 text-white focus:border-rocket-500 outline-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Date (e.g., Oct 15, 2023)</label>
+              <input type="text" required value={eventFormData.date} onChange={e => setEventFormData({...eventFormData, date: e.target.value})} className="w-full p-3 bg-slate-800 border border-slate-700 text-white focus:border-rocket-500 outline-none" />
+            </div>
+          </div>
+          <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Location</label>
+              <input type="text" required value={eventFormData.location} onChange={e => setEventFormData({...eventFormData, location: e.target.value})} className="w-full p-3 bg-slate-800 border border-slate-700 text-white focus:border-rocket-500 outline-none" />
+          </div>
+          <div>
+             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Description</label>
+             <textarea rows={3} required value={eventFormData.description} onChange={e => setEventFormData({...eventFormData, description: e.target.value})} className="w-full p-3 bg-slate-800 border border-slate-700 text-white focus:border-rocket-500 outline-none" />
+          </div>
+          <div>
+             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Event Poster / Image</label>
+             <div className="flex items-center gap-4">
+               <div className="w-24 h-16 bg-slate-800 border border-slate-700 flex-shrink-0 overflow-hidden">
+                 {eventFormData.image ? <img src={eventFormData.image} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-600"><ImageIcon className="w-5 h-5" /></div>}
+               </div>
+               <label className="flex-1 cursor-pointer bg-slate-800 hover:bg-slate-700 border border-slate-700 p-3 text-slate-400 text-sm flex items-center gap-2">
+                 <Upload className="w-4 h-4" /> {eventFormData.image ? 'Change Image' : 'Upload Image'}
+                 <input type="file" accept="image/*" className="hidden" onChange={handleEventImageUpload} />
+               </label>
+             </div>
+          </div>
+          <button type="submit" className="bg-rocket-500 text-slate-950 px-8 py-3 font-bold uppercase tracking-widest hover:bg-white transition-colors">
+            Save Event
           </button>
       </form>
     </div>
@@ -662,7 +765,6 @@ const AdminDashboard = ({
       {renderSidebar()}
       
       <div className="flex-1 p-8 overflow-y-auto">
-        {/* Vehicles Tab */}
         {activeTab === 'vehicles' && (
           <div className="max-w-5xl mx-auto space-y-8">
             <div className="flex justify-between items-center">
@@ -682,7 +784,7 @@ const AdminDashboard = ({
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-slate-800 border-b border-slate-700">
-                      <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Main Image</th>
+                      <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Image</th>
                       <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Vehicle</th>
                       <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Category</th>
                       <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Actions</th>
@@ -692,7 +794,7 @@ const AdminDashboard = ({
                     {cars.map(car => (
                       <tr key={car.id} className="border-b border-slate-800 hover:bg-slate-800/50">
                         <td className="p-4">
-                          <img src={car.images[0]} alt={car.model} className="w-16 h-12 object-cover rounded-sm" />
+                          <img src={car.images[0]} alt={car.model} className="w-16 h-12 object-cover" />
                         </td>
                         <td className="p-4">
                           <div className="font-bold text-white">{car.year} {car.make}</div>
@@ -700,8 +802,8 @@ const AdminDashboard = ({
                         </td>
                         <td className="p-4 text-sm text-slate-400">{car.type}</td>
                         <td className="p-4 text-right space-x-2">
-                          <button onClick={() => handleEditCar(car)} className="p-2 text-slate-500 hover:text-rocket-500 transition-colors"><Edit className="w-4 h-4" /></button>
-                          <button onClick={() => handleDeleteCar(car.id)} className="p-2 text-slate-500 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                          <button onClick={() => handleEditCar(car)} className="p-2 text-slate-500 hover:text-rocket-500"><Edit className="w-4 h-4" /></button>
+                          <button onClick={() => handleDeleteCar(car.id)} className="p-2 text-slate-500 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
                         </td>
                       </tr>
                     ))}
@@ -712,20 +814,57 @@ const AdminDashboard = ({
           </div>
         )}
 
-        {/* Carousel Tab */}
+        {activeTab === 'events' && (
+          <div className="max-w-4xl mx-auto space-y-8">
+            <div className="flex justify-between items-center">
+              <div>
+                 <h1 className="text-3xl font-display font-bold text-white uppercase">Event Calendar</h1>
+                 <p className="text-slate-400">Promote gatherings and track days.</p>
+              </div>
+              {!editingEvent && (
+                <button onClick={handleCreateEvent} className="bg-rocket-500 text-slate-950 px-6 py-2 font-bold uppercase tracking-wider hover:bg-white transition-colors flex items-center gap-2">
+                  <Plus className="w-4 h-4" /> Create Event
+                </button>
+              )}
+            </div>
+
+            {editingEvent || eventFormData.id ? renderEventForm() : (
+              <div className="grid grid-cols-1 gap-4">
+                {events.map(ev => (
+                  <div key={ev.id} className="bg-slate-900 border border-slate-800 p-6 flex justify-between items-center group hover:border-rocket-500 transition-colors">
+                    <div className="flex items-center gap-6">
+                      <div className="w-20 h-20 bg-slate-800 overflow-hidden">
+                        <img src={ev.image} className="w-full h-full object-cover" />
+                      </div>
+                      <div>
+                        <h3 className="text-white font-bold uppercase tracking-wider">{ev.title}</h3>
+                        <p className="text-rocket-500 text-xs font-bold mt-1">{ev.date} @ {ev.location}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={() => handleEditEvent(ev)} className="p-2 text-slate-500 hover:text-rocket-500"><Edit className="w-4 h-4" /></button>
+                      <button onClick={() => handleDeleteEvent(ev.id)} className="p-2 text-slate-500 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {activeTab === 'carousel' && (
           <div className="max-w-4xl mx-auto space-y-8">
             <div className="flex justify-between items-center">
               <div>
                  <h1 className="text-3xl font-display font-bold text-white uppercase">Hero Carousel</h1>
-                 <p className="text-slate-400">Manage home page slides and images. If empty, the system uses the latest inventory.</p>
+                 <p className="text-slate-400">Manage home page slides.</p>
               </div>
-              <button onClick={handleSaveContent} className="bg-rocket-500 text-slate-950 px-6 py-2 font-bold uppercase tracking-wider hover:bg-white transition-colors flex items-center gap-2">
-                  <Save className="w-4 h-4" /> Save Changes
+              <button onClick={handleSaveContent} className="bg-rocket-500 text-slate-950 px-6 py-2 font-bold uppercase tracking-wider flex items-center gap-2">
+                  <Save className="w-4 h-4" /> Save Carousel
                </button>
             </div>
 
-            <div className="bg-slate-900 border border-slate-800 shadow-sm p-8 space-y-6">
+            <div className="bg-slate-900 border border-slate-800 p-8 space-y-6">
                {(contentForm.hero.slides && contentForm.hero.slides.length > 0) ? (
                  contentForm.hero.slides.map((slide, idx) => (
                    <div key={slide.id} className="bg-slate-800 p-6 border border-slate-700 flex flex-col md:flex-row gap-6">
@@ -739,81 +878,43 @@ const AdminDashboard = ({
                              </div>
                            )}
                          </div>
-                         <label className="w-full cursor-pointer bg-slate-700 hover:bg-rocket-500 hover:text-slate-950 text-white text-xs font-bold uppercase py-2 flex items-center justify-center gap-2 transition-colors">
-                            <Upload className="w-3 h-3" /> Upload from Laptop
+                         <label className="w-full cursor-pointer bg-slate-700 hover:bg-rocket-500 hover:text-slate-950 text-white text-xs font-bold uppercase py-2 flex items-center justify-center gap-2">
+                            <Upload className="w-3 h-3" /> Upload
                             <input type="file" accept="image/*" className="hidden" onChange={(e) => handleCarouselFileUpload(idx, e)} />
                          </label>
                       </div>
                       <div className="flex-1 space-y-4">
-                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Image URL</label>
-                            <input 
-                              type="text" 
-                              value={slide.image} 
-                              onChange={(e) => handleSlideChange(idx, 'image', e.target.value)}
-                              className="w-full p-2 bg-slate-900 border border-slate-600 text-white text-sm focus:border-rocket-500 outline-none" 
-                            />
-                         </div>
-                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Headline Title</label>
-                            <input 
-                              type="text" 
-                              value={slide.title} 
-                              onChange={(e) => handleSlideChange(idx, 'title', e.target.value)}
-                              className="w-full p-2 bg-slate-900 border border-slate-600 text-white text-sm focus:border-rocket-500 outline-none" 
-                            />
-                         </div>
-                         <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Subtitle / Tag</label>
-                            <input 
-                              type="text" 
-                              value={slide.subtitle} 
-                              onChange={(e) => handleSlideChange(idx, 'subtitle', e.target.value)}
-                              className="w-full p-2 bg-slate-900 border border-slate-600 text-white text-sm focus:border-rocket-500 outline-none" 
-                            />
-                         </div>
-                         <div className="pt-2 flex justify-end">
-                            <button onClick={() => handleDeleteSlide(idx)} className="text-red-500 hover:text-red-400 text-xs font-bold uppercase tracking-wider flex items-center gap-2">
-                               <Trash2 className="w-3 h-3" /> Remove Slide
-                            </button>
-                         </div>
+                         <input type="text" placeholder="Title" value={slide.title} onChange={(e) => handleSlideChange(idx, 'title', e.target.value)} className="w-full p-2 bg-slate-900 border border-slate-600 text-white" />
+                         <input type="text" placeholder="Subtitle" value={slide.subtitle} onChange={(e) => handleSlideChange(idx, 'subtitle', e.target.value)} className="w-full p-2 bg-slate-900 border border-slate-600 text-white" />
+                         <button onClick={() => handleDeleteSlide(idx)} className="text-red-500 text-xs font-bold uppercase flex items-center gap-2"><Trash2 className="w-3 h-3" /> Remove</button>
                       </div>
                    </div>
                  ))
                ) : (
-                 <div className="text-center py-12 border-2 border-dashed border-slate-800 bg-slate-900/50">
-                    <p className="text-slate-500 mb-4">No custom slides active. Showing latest inventory automatically.</p>
+                 <div className="text-center py-12 border-2 border-dashed border-slate-800">
+                    <p className="text-slate-500">No custom slides active.</p>
                  </div>
                )}
 
-               <button onClick={handleAddSlide} className="w-full py-4 border-2 border-dashed border-slate-700 text-slate-400 hover:text-white hover:border-rocket-500 hover:bg-slate-800 transition-all font-bold uppercase tracking-widest flex items-center justify-center gap-2">
-                  <Plus className="w-5 h-5" /> Add New Slide
+               <button onClick={handleAddSlide} className="w-full py-4 border-2 border-dashed border-slate-700 text-slate-400 hover:text-white hover:border-rocket-500 flex items-center justify-center gap-2">
+                  <Plus className="w-5 h-5" /> Add Slide
                </button>
             </div>
           </div>
         )}
 
-        {/* Categories Tab */}
         {activeTab === 'categories' && (
           <div className="max-w-2xl mx-auto space-y-8">
             <h1 className="text-3xl font-display font-bold text-white uppercase">Categories</h1>
-            
-            <div className="bg-slate-900 p-8 border border-slate-800 shadow-sm">
+            <div className="bg-slate-900 p-8 border border-slate-800">
               <div className="flex gap-4 mb-8">
-                <input 
-                  type="text" 
-                  value={newCategory} 
-                  onChange={e => setNewCategory(e.target.value)}
-                  placeholder="New Category Name"
-                  className="flex-1 p-3 bg-slate-800 border border-slate-700 text-white rounded-none focus:border-rocket-500 outline-none" 
-                />
-                <button onClick={handleAddCategory} className="bg-slate-800 border border-slate-700 hover:bg-rocket-500 hover:text-slate-950 text-white px-6 font-bold uppercase tracking-wider">Add</button>
+                <input type="text" value={newCategory} onChange={e => setNewCategory(e.target.value)} placeholder="New Category" className="flex-1 p-3 bg-slate-800 border border-slate-700 text-white outline-none" />
+                <button onClick={handleAddCategory} className="bg-rocket-500 text-slate-950 px-6 font-bold uppercase">Add</button>
               </div>
-
               <div className="space-y-2">
                 {categories.map((cat, idx) => (
                   <div key={idx} className="flex justify-between items-center p-4 bg-slate-800/50 border border-slate-800">
-                    <span className="text-white font-medium">{cat}</span>
+                    <span className="text-white">{cat}</span>
                     <button onClick={() => handleDeleteCategory(cat)} className="text-slate-500 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
                   </div>
                 ))}
@@ -822,75 +923,26 @@ const AdminDashboard = ({
           </div>
         )}
 
-        {/* Content Tab */}
         {activeTab === 'content' && (
            <div className="max-w-4xl mx-auto space-y-8">
              <div className="flex justify-between items-center">
                <h1 className="text-3xl font-display font-bold text-white uppercase">Site Content</h1>
-               <button onClick={handleSaveContent} className="bg-rocket-500 text-slate-950 px-6 py-2 font-bold uppercase tracking-wider hover:bg-white transition-colors flex items-center gap-2">
-                  <Save className="w-4 h-4" /> Save Changes
+               <button onClick={handleSaveContent} className="bg-rocket-500 text-slate-950 px-6 py-2 font-bold uppercase flex items-center gap-2">
+                  <Save className="w-4 h-4" /> Save All
                </button>
              </div>
-
              <div className="space-y-6">
-                {/* Hero Section */}
-                <div className="bg-slate-900 p-8 border border-slate-800 shadow-sm">
-                   <h3 className="text-lg font-bold text-white uppercase mb-6 border-b border-slate-800 pb-2">Hero Section</h3>
-                   <div className="grid grid-cols-1 gap-6">
-                      <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Title</label>
-                        <input type="text" value={contentForm.hero.title} onChange={e => setContentForm({...contentForm, hero: {...contentForm.hero, title: e.target.value}})} className="w-full p-3 bg-slate-800 border border-slate-700 text-white rounded-none focus:border-rocket-500 outline-none" />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Subtitle</label>
-                        <textarea rows={3} value={contentForm.hero.subtitle} onChange={e => setContentForm({...contentForm, hero: {...contentForm.hero, subtitle: e.target.value}})} className="w-full p-3 bg-slate-800 border border-slate-700 text-white rounded-none focus:border-rocket-500 outline-none" />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Est. Tagline</label>
-                        <input type="text" value={contentForm.hero.estYear} onChange={e => setContentForm({...contentForm, hero: {...contentForm.hero, estYear: e.target.value}})} className="w-full p-3 bg-slate-800 border border-slate-700 text-white rounded-none focus:border-rocket-500 outline-none" />
-                      </div>
-                   </div>
+                <div className="bg-slate-900 p-8 border border-slate-800">
+                   <h3 className="text-lg font-bold text-white uppercase mb-6">Hero Info</h3>
+                   <input type="text" value={contentForm.hero.title} onChange={e => setContentForm({...contentForm, hero: {...contentForm.hero, title: e.target.value}})} className="w-full p-3 bg-slate-800 border border-slate-700 text-white mb-4" />
+                   <textarea rows={3} value={contentForm.hero.subtitle} onChange={e => setContentForm({...contentForm, hero: {...contentForm.hero, subtitle: e.target.value}})} className="w-full p-3 bg-slate-800 border border-slate-700 text-white" />
                 </div>
-
-                {/* Services Section */}
-                <div className="bg-slate-900 p-8 border border-slate-800 shadow-sm">
-                   <h3 className="text-lg font-bold text-white uppercase mb-6 border-b border-slate-800 pb-2">Services Section</h3>
-                   <div className="grid grid-cols-1 gap-6">
-                      <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Section Title</label>
-                        <input type="text" value={contentForm.services.title} onChange={e => setContentForm({...contentForm, services: {...contentForm.services, title: e.target.value}})} className="w-full p-3 bg-slate-800 border border-slate-700 text-white rounded-none focus:border-rocket-500 outline-none" />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Description</label>
-                        <textarea rows={2} value={contentForm.services.description} onChange={e => setContentForm({...contentForm, services: {...contentForm.services, description: e.target.value}})} className="w-full p-3 bg-slate-800 border border-slate-700 text-white rounded-none focus:border-rocket-500 outline-none" />
-                      </div>
-                   </div>
-                </div>
-
-                {/* Contact Section */}
-                <div className="bg-slate-900 p-8 border border-slate-800 shadow-sm">
-                   <h3 className="text-lg font-bold text-white uppercase mb-6 border-b border-slate-800 pb-2">Footer / Contact</h3>
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="md:col-span-2">
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Address</label>
-                        <input type="text" value={contentForm.contact.address} onChange={e => setContentForm({...contentForm, contact: {...contentForm.contact, address: e.target.value}})} className="w-full p-3 bg-slate-800 border border-slate-700 text-white rounded-none focus:border-rocket-500 outline-none" />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Phone 1</label>
-                        <input type="text" value={contentForm.contact.phone1} onChange={e => setContentForm({...contentForm, contact: {...contentForm.contact, phone1: e.target.value}})} className="w-full p-3 bg-slate-800 border border-slate-700 text-white rounded-none focus:border-rocket-500 outline-none" />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Phone 2</label>
-                        <input type="text" value={contentForm.contact.phone2} onChange={e => setContentForm({...contentForm, contact: {...contentForm.contact, phone2: e.target.value}})} className="w-full p-3 bg-slate-800 border border-slate-700 text-white rounded-none focus:border-rocket-500 outline-none" />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Week Hours</label>
-                        <input type="text" value={contentForm.contact.openingHoursWeek} onChange={e => setContentForm({...contentForm, contact: {...contentForm.contact, openingHoursWeek: e.target.value}})} className="w-full p-3 bg-slate-800 border border-slate-700 text-white rounded-none focus:border-rocket-500 outline-none" />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Weekend Hours</label>
-                        <input type="text" value={contentForm.contact.openingHoursSat} onChange={e => setContentForm({...contentForm, contact: {...contentForm.contact, openingHoursSat: e.target.value}})} className="w-full p-3 bg-slate-800 border border-slate-700 text-white rounded-none focus:border-rocket-500 outline-none" />
-                      </div>
+                <div className="bg-slate-900 p-8 border border-slate-800">
+                   <h3 className="text-lg font-bold text-white uppercase mb-6">Contact</h3>
+                   <input type="text" value={contentForm.contact.address} onChange={e => setContentForm({...contentForm, contact: {...contentForm.contact, address: e.target.value}})} className="w-full p-3 bg-slate-800 border border-slate-700 text-white mb-4" />
+                   <div className="grid grid-cols-2 gap-4">
+                      <input type="text" value={contentForm.contact.phone1} onChange={e => setContentForm({...contentForm, contact: {...contentForm.contact, phone1: e.target.value}})} className="p-3 bg-slate-800 border border-slate-700 text-white" />
+                      <input type="text" value={contentForm.contact.phone2} onChange={e => setContentForm({...contentForm, contact: {...contentForm.contact, phone2: e.target.value}})} className="p-3 bg-slate-800 border border-slate-700 text-white" />
                    </div>
                 </div>
              </div>
@@ -901,25 +953,52 @@ const AdminDashboard = ({
   );
 };
 
-// --- Main App Component ---
-
 const App: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState<'home' | 'showroom' | 'compare' | 'services' | 'admin'>('home');
+  const [currentPage, setCurrentPage] = useState<'home' | 'showroom' | 'compare' | 'services' | 'admin' | 'events'>('home');
   
-  // App State
-  const [inventory, setInventory] = useState<Car[]>(CARS);
-  const [categories, setCategories] = useState<string[]>(DEFAULT_CATEGORIES);
-  const [siteContent, setSiteContent] = useState<SiteContent>(DEFAULT_SITE_CONTENT);
+  // State Initialization with LocalStorage Persistence
+  const [inventory, setInventory] = useState<Car[]>(() => {
+    const saved = localStorage.getItem('rmc_inventory');
+    return saved ? JSON.parse(saved) : CARS;
+  });
 
-  // Authentication State
+  const [categories, setCategories] = useState<string[]>(() => {
+    const saved = localStorage.getItem('rmc_categories');
+    return saved ? JSON.parse(saved) : DEFAULT_CATEGORIES;
+  });
+
+  const [siteContent, setSiteContent] = useState<SiteContent>(() => {
+    const saved = localStorage.getItem('rmc_content');
+    return saved ? JSON.parse(saved) : DEFAULT_SITE_CONTENT;
+  });
+
+  const [events, setEvents] = useState<RmcEvent[]>(() => {
+    const saved = localStorage.getItem('rmc_events');
+    return saved ? JSON.parse(saved) : DEFAULT_EVENTS;
+  });
+
+  // Sync state to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('rmc_inventory', JSON.stringify(inventory));
+  }, [inventory]);
+
+  useEffect(() => {
+    localStorage.setItem('rmc_categories', JSON.stringify(categories));
+  }, [categories]);
+
+  useEffect(() => {
+    localStorage.setItem('rmc_content', JSON.stringify(siteContent));
+  }, [siteContent]);
+
+  useEffect(() => {
+    localStorage.setItem('rmc_events', JSON.stringify(events));
+  }, [events]);
+
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
   const [authCreds, setAuthCreds] = useState({ user: '', pass: '' });
   const [showForgotPassword, setShowForgotPassword] = useState(false);
-
   const [selectedCar, setSelectedCar] = useState<Car | null>(null);
   const [filterType, setFilterType] = useState<string>('All');
-  
-  // Comparison State
   const [compareCar1, setCompareCar1] = useState<Car | null>(null);
   const [compareCar2, setCompareCar2] = useState<Car | null>(null);
 
@@ -935,7 +1014,12 @@ const App: React.FC = () => {
 
   const handleAdminLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (authCreds.user === 'admin' && authCreds.pass === 'rocket') {
+    const admins = [
+      { user: 'admin1', pass: 'rocket1' },
+      { user: 'admin2', pass: 'rocket2' }
+    ];
+    const isValid = admins.some(a => a.user === authCreds.user && a.pass === authCreds.pass);
+    if (isValid) {
       setIsAdminAuthenticated(true);
     } else {
       alert('Invalid credentials');
@@ -944,24 +1028,23 @@ const App: React.FC = () => {
 
   const handleForgotPasswordSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    alert('Password reset link sent to your email (simulated).');
+    alert('Simulated reset link sent.');
     setShowForgotPassword(false);
   };
 
   const renderHome = () => (
     <>
       <Hero onShopNow={() => handleNavigate('showroom')} content={siteContent.hero} inventory={inventory} />
+      
+      {/* Inventory Preview */}
       <section className="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-end mb-16 border-b border-slate-800 pb-8">
           <div>
             <h2 className="text-4xl font-display font-bold text-white mb-2 uppercase tracking-tight">Latest Arrivals</h2>
             <p className="text-slate-400 font-light">Hand-picked classics added this month</p>
           </div>
-          <button 
-             onClick={() => handleNavigate('showroom')}
-             className="mt-6 md:mt-0 text-rocket-500 hover:text-white font-bold uppercase tracking-wider flex items-center gap-2 transition-colors text-sm"
-          >
-            View Full Collection <ArrowRight className="w-4 h-4" />
+          <button onClick={() => handleNavigate('showroom')} className="text-rocket-500 hover:text-white font-bold uppercase tracking-wider flex items-center gap-2 text-sm">
+            View Collection <ArrowRight className="w-4 h-4" />
           </button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
@@ -970,35 +1053,67 @@ const App: React.FC = () => {
           ))}
         </div>
       </section>
+
+      {/* Events Section */}
+      <section className="py-24 bg-slate-900 border-y border-slate-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row justify-between items-end mb-16">
+            <div>
+              <span className="text-rocket-500 text-[10px] font-bold uppercase tracking-[0.4em] mb-4 block">The Social Circuit</span>
+              <h2 className="text-4xl font-display font-bold text-white uppercase tracking-tight">Upcoming Events</h2>
+            </div>
+            <button onClick={() => handleNavigate('events')} className="hidden md:flex items-center gap-2 text-white text-xs font-bold uppercase tracking-widest hover:text-rocket-500 transition-colors">
+              Full Calendar <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+             {events.slice(0, 3).map(ev => (
+               <EventCard key={ev.id} event={ev} />
+             ))}
+             {/* Join the Club Card */}
+             <div className="bg-rocket-500 p-8 flex flex-col justify-center items-center text-center transform skew-x-[-5deg]">
+               <div className="transform skew-x-[5deg]">
+                 <Ticket className="w-12 h-12 text-slate-950 mb-6 mx-auto" />
+                 <h3 className="text-2xl font-display font-bold text-slate-950 uppercase mb-4">Join The Circle</h3>
+                 <p className="text-slate-900 text-sm font-medium mb-8">Get priority access to track days and private garage tours.</p>
+                 <button className="bg-slate-950 text-white px-8 py-3 font-bold uppercase tracking-widest text-xs hover:bg-slate-800 transition-colors">
+                   Sign Up
+                 </button>
+               </div>
+             </div>
+          </div>
+        </div>
+      </section>
       
-      {/* Brand Values */}
-      <section className="bg-slate-900 py-20 border-t border-slate-800">
+      {/* Standards Section */}
+      <section className="py-20">
         <div className="max-w-7xl mx-auto px-4">
              <div className="text-center mb-16">
                <h2 className="text-white text-3xl font-display font-bold uppercase tracking-wider">The Rocket Standard</h2>
                <div className="w-24 h-1 bg-rocket-500 mx-auto mt-4"></div>
              </div>
              <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
-                <div className="p-8 bg-slate-950 border border-slate-800 hover:border-rocket-500 transition-colors group">
-                    <div className="w-16 h-16 bg-slate-800 group-hover:bg-rocket-500 text-white rounded-none flex items-center justify-center mx-auto mb-6 transition-colors">
+                <div className="p-8 bg-slate-900 border border-slate-800">
+                    <div className="w-16 h-16 bg-slate-800 text-white flex items-center justify-center mx-auto mb-6">
                         <ShieldCheck className="w-8 h-8" />
                     </div>
                     <h3 className="text-xl font-display font-bold text-white mb-3 uppercase">Verified Provenance</h3>
-                    <p className="text-slate-400 font-light leading-relaxed">Every vehicle comes with a documented history file and certificate of authenticity.</p>
+                    <p className="text-slate-400 font-light leading-relaxed">Every vehicle comes with documented history.</p>
                 </div>
-                <div className="p-8 bg-slate-950 border border-slate-800 hover:border-rocket-500 transition-colors group">
-                    <div className="w-16 h-16 bg-slate-800 group-hover:bg-rocket-500 text-white rounded-none flex items-center justify-center mx-auto mb-6 transition-colors">
+                <div className="p-8 bg-slate-900 border border-slate-800">
+                    <div className="w-16 h-16 bg-slate-800 text-white flex items-center justify-center mx-auto mb-6">
                         <Wrench className="w-8 h-8" />
                     </div>
-                    <h3 className="text-xl font-display font-bold text-white mb-3 uppercase">Master Tech Inspection</h3>
-                    <p className="text-slate-400 font-light leading-relaxed">Our in-house master mechanics perform a 200+ point mechanical restoration check.</p>
+                    <h3 className="text-xl font-display font-bold text-white mb-3 uppercase">Master Tech</h3>
+                    <p className="text-slate-400 font-light leading-relaxed">Our in-house mechanics perform a 200+ point check.</p>
                 </div>
-                <div className="p-8 bg-slate-950 border border-slate-800 hover:border-rocket-500 transition-colors group">
-                    <div className="w-16 h-16 bg-slate-800 group-hover:bg-rocket-500 text-white rounded-none flex items-center justify-center mx-auto mb-6 transition-colors">
+                <div className="p-8 bg-slate-900 border border-slate-800">
+                    <div className="w-16 h-16 bg-slate-800 text-white flex items-center justify-center mx-auto mb-6">
                         <Trophy className="w-8 h-8" />
                     </div>
                     <h3 className="text-xl font-display font-bold text-white mb-3 uppercase">Concours Ready</h3>
-                    <p className="text-slate-400 font-light leading-relaxed">Detailed to perfection, our cars are ready for the show field or the open road.</p>
+                    <p className="text-slate-400 font-light leading-relaxed">Detailed to perfection, ready for the show field.</p>
                 </div>
              </div>
         </div>
@@ -1007,26 +1122,17 @@ const App: React.FC = () => {
   );
 
   const renderShowroom = () => (
-    <div className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto min-h-screen">
+    <div className="py-20 px-4 max-w-7xl mx-auto min-h-screen">
       <div className="mb-16 text-center">
         <h1 className="text-5xl font-display font-bold text-white mb-8 uppercase">The Collection</h1>
         <div className="flex flex-wrap justify-center gap-4">
           {['All', ...categories].map(type => (
-            <button
-              key={type}
-              onClick={() => setFilterType(type)}
-              className={`px-6 py-2 border-2 text-sm font-bold uppercase tracking-wider transition-all ${
-                filterType === type 
-                  ? 'bg-white text-slate-950 border-white' 
-                  : 'bg-transparent text-slate-400 border-slate-700 hover:border-rocket-500 hover:text-rocket-500'
-              }`}
-            >
+            <button key={type} onClick={() => setFilterType(type)} className={`px-6 py-2 border-2 text-sm font-bold uppercase transition-all ${filterType === type ? 'bg-white text-slate-950 border-white' : 'text-slate-400 border-slate-700'}`}>
               {type}
             </button>
           ))}
         </div>
       </div>
-      
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
         {filteredCars.map(car => (
           <CarCard key={car.id} car={car} onClick={() => setSelectedCar(car)} />
@@ -1036,146 +1142,62 @@ const App: React.FC = () => {
   );
 
   const renderServices = () => (
-    <div className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto min-h-screen">
+    <div className="py-20 px-4 max-w-7xl mx-auto min-h-screen">
       <div className="text-center mb-16">
         <h1 className="text-5xl font-display font-bold text-white mb-6 uppercase">{siteContent.services.title}</h1>
-        <p className="text-slate-400 font-light text-lg max-w-2xl mx-auto">
-          {siteContent.services.description}
-        </p>
+        <p className="text-slate-400 max-w-2xl mx-auto">{siteContent.services.description}</p>
       </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-        {/* Car Detailing */}
-        <div className="bg-slate-900 p-8 border border-slate-800 shadow-sm hover:shadow-xl transition-all group">
-            <div className="h-64 overflow-hidden mb-8 relative">
-                <img src="https://images.unsplash.com/photo-1601362840469-51e4d8d58785?q=80&w=2070&auto=format&fit=crop" alt="Car Detailing" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                <div className="absolute inset-0 bg-slate-950/20 group-hover:bg-transparent transition-colors"></div>
-            </div>
-            <h3 className="text-2xl font-display font-bold text-white mb-4 uppercase group-hover:text-rocket-500 transition-colors">Premium Car Detailing</h3>
-            <p className="text-slate-400 font-light leading-relaxed mb-6">
-                Our concours-level detailing service goes beyond a wash. We use pH-neutral products, clay bar treatments, and multi-stage paint correction to restore your vehicle's finish to showroom glory. Interior leather conditioning and wood trim preservation included.
-            </p>
-            <ul className="space-y-2 mb-8 text-sm text-slate-300 font-medium">
-                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-rocket-500"/> Paint Correction & Ceramic Coating</li>
-                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-rocket-500"/> Leather Cleaning & Conditioning</li>
-                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-rocket-500"/> Engine Bay Detail</li>
-            </ul>
-            <button className="text-rocket-500 font-bold uppercase tracking-wider text-sm flex items-center gap-2">Book Appointment <ArrowRight className="w-4 h-4" /></button>
+        <div className="bg-slate-900 p-8 border border-slate-800">
+            <h3 className="text-2xl font-display font-bold text-white mb-4 uppercase">Premium Detailing</h3>
+            <p className="text-slate-400 mb-6">Multi-stage paint correction and interior preservation.</p>
+            <button className="text-rocket-500 font-bold uppercase text-sm">Book Appointment</button>
         </div>
-
-        {/* Free Maintenance */}
-        <div className="bg-slate-900 p-8 border border-slate-800 shadow-sm hover:shadow-xl transition-all group">
-            <div className="h-64 overflow-hidden mb-8 relative">
-                <img src="https://images.unsplash.com/photo-1487754180451-c456f719a1fc?q=80&w=2070&auto=format&fit=crop" alt="Mechanic" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                 <div className="absolute top-4 left-4">
-                   <span className="bg-rocket-500 text-slate-950 text-xs font-bold px-3 py-1 uppercase tracking-wider shadow-lg">
-                     Exclusive for Buyers
-                   </span>
-                </div>
-            </div>
-            <h3 className="text-2xl font-display font-bold text-white mb-4 uppercase group-hover:text-rocket-500 transition-colors">Free Maintenance Program</h3>
-            <p className="text-slate-400 font-light leading-relaxed mb-6">
-                When you purchase a vehicle from Rocket Motor Company, you join the family. We provide 12 months of complimentary scheduled maintenance to ensure your classic runs as beautifully as it looks. Peace of mind comes standard.
-            </p>
-             <ul className="space-y-2 mb-8 text-sm text-slate-300 font-medium">
-                <li className="flex items-center gap-2"><Sparkles className="w-4 h-4 text-rocket-500"/> 12 Months Complimentary Service</li>
-                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-rocket-500"/> Fluid Top-offs & Brake Inspection</li>
-                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-rocket-500"/> Annual Tune-up</li>
-            </ul>
-            <button className="text-rocket-500 font-bold uppercase tracking-wider text-sm flex items-center gap-2">Learn More <ArrowRight className="w-4 h-4" /></button>
+        <div className="bg-slate-900 p-8 border border-slate-800">
+            <h3 className="text-2xl font-display font-bold text-white mb-4 uppercase">Maintenance Program</h3>
+            <p className="text-slate-400 mb-6">Complimentary service for 12 months on all purchases.</p>
+            <button className="text-rocket-500 font-bold uppercase text-sm">Learn More</button>
         </div>
       </div>
     </div>
   );
 
-  const renderCompare = () => (
-    <div className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto min-h-screen">
-      <h1 className="text-5xl font-display font-bold text-white mb-4 text-center uppercase">Head to Head</h1>
-      <p className="text-slate-400 text-center mb-16 font-light text-lg">Compare specs, power, and rarity.</p>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-16">
-        {/* Selector 1 */}
-        <div className="bg-slate-900 p-8 border border-slate-800 shadow-sm">
-          <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Vehicle 1</label>
-          <div className="relative">
-            <select 
-              className="w-full bg-slate-800 text-white p-4 border-b-2 border-slate-700 focus:border-rocket-500 outline-none appearance-none font-medium"
-              onChange={(e) => setCompareCar1(inventory.find(c => c.id === e.target.value) || null)}
-              value={compareCar1?.id || ''}
-            >
-              <option value="">Select a vehicle...</option>
-              {inventory.map(c => <option key={c.id} value={c.id}>{c.year} {c.make} {c.model}</option>)}
-            </select>
-            <ChevronDown className="absolute right-4 top-5 w-5 h-5 text-slate-400 pointer-events-none" />
-          </div>
-          {compareCar1 && (
-             <div className="mt-8 animate-fade-in">
-                <img src={compareCar1.images[0]} alt={compareCar1.model} className="w-full h-56 object-cover mb-6 grayscale hover:grayscale-0 transition-all duration-500" />
-                <h3 className="text-2xl font-display font-bold text-white uppercase">{compareCar1.make} {compareCar1.model}</h3>
-             </div>
-          )}
-        </div>
+  const renderEvents = () => (
+    <div className="py-20 px-4 max-w-7xl mx-auto min-h-screen">
+      <div className="text-center mb-16">
+        <h1 className="text-5xl font-display font-bold text-white mb-6 uppercase">Event Calendar</h1>
+        <p className="text-slate-400 max-w-2xl mx-auto font-light">Join the Rocket Motor Company community at these upcoming gatherings.</p>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+        {events.map(ev => (
+          <EventCard key={ev.id} event={ev} />
+        ))}
+      </div>
+    </div>
+  );
 
-        {/* Selector 2 */}
-        <div className="bg-slate-900 p-8 border border-slate-800 shadow-sm">
-          <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Vehicle 2</label>
-          <div className="relative">
-            <select 
-              className="w-full bg-slate-800 text-white p-4 border-b-2 border-slate-700 focus:border-rocket-500 outline-none appearance-none font-medium"
-              onChange={(e) => setCompareCar2(inventory.find(c => c.id === e.target.value) || null)}
-              value={compareCar2?.id || ''}
-            >
-              <option value="">Select a vehicle...</option>
-              {inventory.map(c => <option key={c.id} value={c.id}>{c.year} {c.make} {c.model}</option>)}
-            </select>
-            <ChevronDown className="absolute right-4 top-5 w-5 h-5 text-slate-400 pointer-events-none" />
-          </div>
-          {compareCar2 && (
-             <div className="mt-8 animate-fade-in">
-                <img src={compareCar2.images[0]} alt={compareCar2.model} className="w-full h-56 object-cover mb-6 grayscale hover:grayscale-0 transition-all duration-500" />
-                <h3 className="text-2xl font-display font-bold text-white uppercase">{compareCar2.make} {compareCar2.model}</h3>
-             </div>
-          )}
+  const renderCompare = () => (
+    <div className="py-20 px-4 max-w-7xl mx-auto min-h-screen">
+      <h1 className="text-5xl font-display font-bold text-white mb-16 text-center uppercase">Head to Head</h1>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-16">
+        <div className="bg-slate-900 p-8 border border-slate-800">
+          <select className="w-full bg-slate-800 text-white p-4 outline-none" onChange={(e) => setCompareCar1(inventory.find(c => c.id === e.target.value) || null)} value={compareCar1?.id || ''}>
+            <option value="">Vehicle 1...</option>
+            {inventory.map(c => <option key={c.id} value={c.id}>{c.year} {c.make} {c.model}</option>)}
+          </select>
+          {compareCar1 && <img src={compareCar1.images[0]} className="w-full h-56 object-cover mt-8 grayscale" />}
+        </div>
+        <div className="bg-slate-900 p-8 border border-slate-800">
+          <select className="w-full bg-slate-800 text-white p-4 outline-none" onChange={(e) => setCompareCar2(inventory.find(c => c.id === e.target.value) || null)} value={compareCar2?.id || ''}>
+            <option value="">Vehicle 2...</option>
+            {inventory.map(c => <option key={c.id} value={c.id}>{c.year} {c.make} {c.model}</option>)}
+          </select>
+          {compareCar2 && <img src={compareCar2.images[0]} className="w-full h-56 object-cover mt-8 grayscale" />}
         </div>
       </div>
-
       {compareCar1 && compareCar2 && (
-        <div className="bg-slate-900 p-8 lg:p-12 border border-slate-800 shadow-xl animate-fade-in">
-           <div className="flex flex-col lg:flex-row gap-16 items-center">
-             <div className="w-full lg:w-1/2">
-               <h3 className="text-lg font-bold text-white mb-8 text-center uppercase tracking-widest border-b border-slate-800 pb-4">Performance Metric</h3>
-               <ComparisonChart car1={compareCar1} car2={compareCar2} />
-             </div>
-             <div className="w-full lg:w-1/2 space-y-8">
-               <h3 className="text-lg font-bold text-white mb-8 uppercase tracking-widest border-b border-slate-800 pb-4">Specification Breakdown</h3>
-               
-               <div className="grid grid-cols-3 gap-y-6 text-sm md:text-base font-light">
-                 <div className="text-slate-500 font-bold uppercase text-xs tracking-wider self-center">Spec</div>
-                 <div className="text-rocket-500 font-bold uppercase font-display text-lg">{compareCar1.make}</div>
-                 <div className="text-sky-500 font-bold uppercase font-display text-lg">{compareCar2.make}</div>
-
-                 <div className="col-span-3 h-px bg-slate-800"></div>
-
-                 <div className="text-slate-400 font-medium">Mileage</div>
-                 <div className="text-white font-bold">{compareCar1.specs.mileage.toLocaleString()} mi</div>
-                 <div className="text-white font-bold">{compareCar2.specs.mileage.toLocaleString()} mi</div>
-
-                 <div className="text-slate-400 font-medium">Horsepower</div>
-                 <div className="text-white font-bold">{compareCar1.specs.horsepower} hp</div>
-                 <div className="text-white font-bold">{compareCar2.specs.horsepower} hp</div>
-
-                 <div className="text-slate-400 font-medium">0-60 mph</div>
-                 <div className="text-white font-bold">{compareCar1.specs.zeroToSixty}s</div>
-                 <div className="text-white font-bold">{compareCar2.specs.zeroToSixty}s</div>
-               </div>
-             </div>
-           </div>
-        </div>
-      )}
-
-      {(!compareCar1 || !compareCar2) && (
-        <div className="text-center text-slate-600 py-20 border-2 border-dashed border-slate-800 bg-slate-900/50">
-          <p className="uppercase tracking-widest text-sm font-bold">Select two vehicles above to begin analysis</p>
+        <div className="bg-slate-900 p-8 border border-slate-800">
+           <ComparisonChart car1={compareCar1} car2={compareCar2} />
         </div>
       )}
     </div>
@@ -1183,55 +1205,34 @@ const App: React.FC = () => {
 
   const renderAdmin = () => {
     if (!isAdminAuthenticated) {
-      if (showForgotPassword) {
-        return (
-          <div className="min-h-screen flex items-center justify-center bg-slate-950">
-             <div className="bg-slate-900 p-10 shadow-xl border-t-4 border-rocket-500 max-w-md w-full animate-fade-in">
-               <div className="flex justify-center mb-6">
-                 <div className="bg-slate-950 p-3 rounded-full">
-                    <Lock className="text-white w-6 h-6" />
-                 </div>
-               </div>
-               <h2 className="text-center text-2xl font-display font-bold uppercase text-white mb-2">Reset Password</h2>
-               <p className="text-slate-400 text-center text-sm mb-6">Enter your email to receive recovery instructions.</p>
-               <form onSubmit={handleForgotPasswordSubmit} className="space-y-4">
-                  <div>
-                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Email Address</label>
-                     <input type="email" required className="w-full p-3 bg-slate-800 border border-slate-700 text-white focus:border-rocket-500 outline-none transition-colors" placeholder="admin@rocketmotor.com" />
-                  </div>
-                  <button type="submit" className="w-full bg-rocket-500 text-slate-950 font-bold uppercase tracking-widest py-3 hover:bg-white transition-colors">Send Link</button>
-                  <button type="button" onClick={() => setShowForgotPassword(false)} className="w-full text-slate-500 text-xs font-bold uppercase tracking-wider hover:text-white transition-colors mt-4">Back to Login</button>
-               </form>
-             </div>
-          </div>
-        );
-      }
-
       return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-950">
-           <div className="bg-slate-900 p-10 shadow-xl border-t-4 border-rocket-500 max-w-md w-full">
-             <div className="flex justify-center mb-6">
-               <div className="bg-slate-950 p-3 rounded-full">
-                  <Lock className="text-white w-6 h-6" />
-               </div>
-             </div>
-             <h2 className="text-center text-2xl font-display font-bold uppercase text-white mb-6">Staff Access</h2>
-             <form onSubmit={handleAdminLogin} className="space-y-4">
-                <div>
-                   <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Username</label>
-                   <input type="text" value={authCreds.user} onChange={e => setAuthCreds({...authCreds, user: e.target.value})} className="w-full p-3 bg-slate-800 border border-slate-700 text-white focus:border-rocket-500 outline-none transition-colors" />
-                </div>
-                <div>
-                   <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Password</label>
-                   <input type="password" value={authCreds.pass} onChange={e => setAuthCreds({...authCreds, pass: e.target.value})} className="w-full p-3 bg-slate-800 border border-slate-700 text-white focus:border-rocket-500 outline-none transition-colors" />
-                </div>
-                
-                <div className="flex justify-end">
-                  <button type="button" onClick={() => setShowForgotPassword(true)} className="text-xs text-rocket-500 hover:text-white transition-colors">Forgot Password?</button>
-                </div>
-
-                <button type="submit" className="w-full bg-rocket-500 text-slate-950 font-bold uppercase tracking-widest py-3 hover:bg-white transition-colors">Login</button>
-             </form>
+        <div className="min-h-screen flex items-center justify-center bg-slate-950 px-4">
+           <div className="bg-slate-900 p-10 border-t-4 border-rocket-500 max-w-md w-full shadow-2xl">
+             <h2 className="text-center text-2xl font-display font-bold uppercase text-white mb-6">
+                {showForgotPassword ? 'Reset Password' : 'Staff Access'}
+             </h2>
+             
+             {showForgotPassword ? (
+                <form onSubmit={handleForgotPasswordSubmit} className="space-y-6">
+                    <p className="text-slate-400 text-sm text-center font-light leading-relaxed">Enter your staff email address and we'll send a recovery link to your secure terminal.</p>
+                    <input type="email" placeholder="Staff Email Address" required className="w-full p-3 bg-slate-800 border border-slate-700 text-white outline-none focus:border-rocket-500" />
+                    <div className="space-y-3">
+                        <button type="submit" className="w-full bg-rocket-500 text-slate-950 font-bold uppercase py-3 hover:bg-white transition-colors">Send Reset Link</button>
+                        <button type="button" onClick={() => setShowForgotPassword(false)} className="w-full text-slate-500 hover:text-white text-xs font-bold uppercase tracking-widest">Back to Login</button>
+                    </div>
+                </form>
+             ) : (
+                <form onSubmit={handleAdminLogin} className="space-y-4">
+                    <input type="text" placeholder="Username" value={authCreds.user} onChange={e => setAuthCreds({...authCreds, user: e.target.value})} className="w-full p-3 bg-slate-800 border border-slate-700 text-white outline-none focus:border-rocket-500" />
+                    <input type="password" placeholder="Password" value={authCreds.pass} onChange={e => setAuthCreds({...authCreds, pass: e.target.value})} className="w-full p-3 bg-slate-800 border border-slate-700 text-white outline-none focus:border-rocket-500" />
+                    <div className="space-y-4">
+                        <button type="submit" className="w-full bg-rocket-500 text-slate-950 font-bold uppercase py-3 hover:bg-white transition-colors">Login</button>
+                        <div className="text-center">
+                            <button type="button" onClick={() => setShowForgotPassword(true)} className="text-slate-500 hover:text-rocket-500 text-xs font-bold uppercase tracking-widest transition-colors">Forgot Password?</button>
+                        </div>
+                    </div>
+                </form>
+             )}
            </div>
         </div>
       );
@@ -1245,6 +1246,8 @@ const App: React.FC = () => {
         setCategories={setCategories}
         siteContent={siteContent}
         setSiteContent={setSiteContent}
+        events={events}
+        setEvents={setEvents}
         onLogout={() => {
           setIsAdminAuthenticated(false);
           setAuthCreds({ user: '', pass: '' });
@@ -1255,24 +1258,23 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white font-sans selection:bg-rocket-500 selection:text-black">
+    <div className="min-h-screen bg-slate-950 text-white font-sans">
       <Navbar onNavigate={handleNavigate} />
-      
       <main>
         {currentPage === 'home' && renderHome()}
         {currentPage === 'showroom' && renderShowroom()}
         {currentPage === 'services' && renderServices()}
+        {currentPage === 'events' && renderEvents()}
         {currentPage === 'compare' && renderCompare()}
         {currentPage === 'admin' && renderAdmin()}
       </main>
-
+      
       <footer className="bg-slate-950 py-16 px-4 border-t border-slate-900 mt-12">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 text-slate-400 text-sm">
            
            {/* Branding Column */}
            <div className="text-center md:text-left">
              <div className="flex items-center gap-2 mb-4 justify-center md:justify-start">
-               {/* Brand Logo - Footer Version (Theme Light for dark background) */}
                <BrandLogo theme="light" />
              </div>
              <p className="text-slate-500 max-w-xs leading-relaxed mx-auto md:mx-0">Preserving the spirit of driving, one classic at a time.</p>
@@ -1308,7 +1310,7 @@ const App: React.FC = () => {
                </div>
            </div>
 
-           {/* Quick Links Column */}
+           {/* Connect Column */}
            <div className="flex flex-col gap-4 text-center md:text-right items-center md:items-end">
              <h4 className="text-white font-display font-bold uppercase tracking-wider mb-2 border-b border-slate-800 pb-2 inline-block md:block">Connect</h4>
              <div className="flex gap-4">
@@ -1336,10 +1338,7 @@ const App: React.FC = () => {
         </div>
       </footer>
 
-      {selectedCar && (
-        <CarDetailModal car={selectedCar} onClose={() => setSelectedCar(null)} />
-      )}
-
+      {selectedCar && <CarDetailModal car={selectedCar} onClose={() => setSelectedCar(null)} />}
       <Concierge />
     </div>
   );
