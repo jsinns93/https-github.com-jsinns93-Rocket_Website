@@ -3,7 +3,7 @@ import { CARS, DEFAULT_CATEGORIES, DEFAULT_SITE_CONTENT, DEFAULT_EVENTS } from '
 import { Car, SiteContent, HeroSlide, Event as RmcEvent } from './types';
 import Concierge from './components/Concierge';
 import ComparisonChart from './components/ComparisonChart';
-import { Search, Info, Gauge, Zap, DollarSign, Menu, X, ArrowRight, ChevronDown, Check, Fuel, Calendar, ShieldCheck, Trophy, Wrench, MapPin, Phone, Globe, Clock, Sparkles, Lock, LayoutDashboard, LogOut, Plus, Trash2, Edit, Save, Image as ImageIcon, Layers, FileText, Settings, Upload, Instagram, Facebook, Youtube, MonitorPlay, Ticket } from 'lucide-react';
+import { Search, Info, Gauge, Zap, DollarSign, Menu, X, ArrowRight, ChevronDown, Check, Fuel, Calendar, ShieldCheck, Trophy, Wrench, MapPin, Phone, Globe, Clock, Sparkles, Lock, LayoutDashboard, LogOut, Plus, Trash2, Edit, Save, Image as ImageIcon, Layers, FileText, Settings, Upload, Instagram, Facebook, Youtube, MonitorPlay, Ticket, Eye, EyeOff } from 'lucide-react';
 
 // --- Sub-components ---
 
@@ -997,6 +997,7 @@ const App: React.FC = () => {
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
   const [authCreds, setAuthCreds] = useState({ user: '', pass: '' });
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [selectedCar, setSelectedCar] = useState<Car | null>(null);
   const [filterType, setFilterType] = useState<string>('All');
   const [compareCar1, setCompareCar1] = useState<Car | null>(null);
@@ -1224,7 +1225,22 @@ const App: React.FC = () => {
              ) : (
                 <form onSubmit={handleAdminLogin} className="space-y-4">
                     <input type="text" placeholder="Username" value={authCreds.user} onChange={e => setAuthCreds({...authCreds, user: e.target.value})} className="w-full p-3 bg-slate-800 border border-slate-700 text-white outline-none focus:border-rocket-500" />
-                    <input type="password" placeholder="Password" value={authCreds.pass} onChange={e => setAuthCreds({...authCreds, pass: e.target.value})} className="w-full p-3 bg-slate-800 border border-slate-700 text-white outline-none focus:border-rocket-500" />
+                    <div className="relative">
+                        <input 
+                            type={showPassword ? "text" : "password"} 
+                            placeholder="Password" 
+                            value={authCreds.pass} 
+                            onChange={e => setAuthCreds({...authCreds, pass: e.target.value})} 
+                            className="w-full p-3 bg-slate-800 border border-slate-700 text-white outline-none focus:border-rocket-500 pr-10" 
+                        />
+                        <button 
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors"
+                        >
+                            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                    </div>
                     <div className="space-y-4">
                         <button type="submit" className="w-full bg-rocket-500 text-slate-950 font-bold uppercase py-3 hover:bg-white transition-colors">Login</button>
                         <div className="text-center">
