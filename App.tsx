@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { CARS, DEFAULT_CATEGORIES, DEFAULT_SITE_CONTENT, DEFAULT_EVENTS } from './constants';
 import { Car, SiteContent, HeroSlide, Event as RmcEvent } from './types';
@@ -1227,18 +1228,18 @@ const App: React.FC = () => {
                     <input type="text" placeholder="Username" value={authCreds.user} onChange={e => setAuthCreds({...authCreds, user: e.target.value})} className="w-full p-3 bg-slate-800 border border-slate-700 text-white outline-none focus:border-rocket-500" />
                     <div className="relative">
                         <input 
-                            type={showPassword ? "text" : "password"} 
-                            placeholder="Password" 
-                            value={authCreds.pass} 
-                            onChange={e => setAuthCreds({...authCreds, pass: e.target.value})} 
-                            className="w-full p-3 bg-slate-800 border border-slate-700 text-white outline-none focus:border-rocket-500 pr-10" 
+                          type={showPassword ? "text" : "password"} 
+                          placeholder="Password" 
+                          value={authCreds.pass} 
+                          onChange={e => setAuthCreds({...authCreds, pass: e.target.value})} 
+                          className="w-full p-3 bg-slate-800 border border-slate-700 text-white outline-none focus:border-rocket-500 pr-12" 
                         />
                         <button 
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors"
+                          type="button" 
+                          onClick={() => setShowPassword(!showPassword)} 
+                          className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors"
                         >
-                            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                         </button>
                     </div>
                     <div className="space-y-4">
