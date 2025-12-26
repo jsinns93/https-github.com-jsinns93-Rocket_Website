@@ -149,7 +149,6 @@ const Hero = ({ onShopNow, content, inventory }: { onShopNow: () => void, conten
   );
 };
 
-// Use React.FC to properly handle the key prop when mapping in lists
 const CarCard: React.FC<{ car: Car; onClick: () => void }> = ({ car, onClick }) => (
   <div onClick={onClick} className="group bg-slate-900 overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 border border-slate-800 hover:border-rocket-500/50">
     <div className="relative h-64 overflow-hidden">
@@ -168,7 +167,6 @@ const CarCard: React.FC<{ car: Car; onClick: () => void }> = ({ car, onClick }) 
   </div>
 );
 
-// Use React.FC to properly handle the key prop when mapping in lists
 const EventCard: React.FC<{ event: RmcEvent }> = ({ event }) => (
   <div className="group relative bg-slate-950 border border-slate-800 overflow-hidden shadow-xl hover:border-rocket-500 transition-all duration-500">
     <div className="h-56 overflow-hidden relative">
@@ -228,6 +226,7 @@ const VehicleAdmin = ({
               <td className="p-4 text-white font-display">${car.price.toLocaleString()}</td>
               <td className="p-4 text-right space-x-2">
                 <button onClick={() => onEdit(car)} className="p-2 text-slate-500 hover:text-rocket-500"><Edit className="w-4 h-4" /></button>
+                {/* Fix: use the correct 'onDelete' prop instead of the undefined 'handleDeleteCar' */}
                 <button onClick={() => onDelete(car.id)} className="p-2 text-slate-500 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
               </td>
             </tr>
@@ -255,16 +254,13 @@ const App: React.FC = () => {
   });
 
   // --- Server Synchronization Logic ---
-  // In a real production app, these would be calls to your backend API.
   const fetchFromServer = useCallback(async () => {
     setLoading(true);
     try {
-      // Simulation of a database fetch
       const saved = localStorage.getItem('rocket_persistence_v1');
       if (saved) {
         setData(JSON.parse(saved));
       }
-      // Simulate network delay
       await new Promise(r => setTimeout(r, 800));
     } catch (err) {
       setError("Failed to synchronize with server. Please refresh.");
@@ -276,7 +272,6 @@ const App: React.FC = () => {
   const syncToServer = useCallback(async (updatedData: AppData) => {
     setSaving(true);
     try {
-      // Simulation of an API POST/PUT
       localStorage.setItem('rocket_persistence_v1', JSON.stringify(updatedData));
       setData(updatedData);
       await new Promise(r => setTimeout(r, 500));
@@ -487,7 +482,6 @@ const App: React.FC = () => {
             </div>
           ) : (
             <div className="flex flex-col md:flex-row min-h-screen bg-slate-950">
-               {/* Simplified Sidebar for Production Readiness */}
                <div className="w-full md:w-64 bg-slate-900 border-r border-slate-800 p-6 flex flex-col h-full">
                   <div className="mb-10 flex items-center gap-3 text-white">
                     <LayoutDashboard className="text-rocket-500" />
@@ -538,10 +532,18 @@ const App: React.FC = () => {
            <div className="flex flex-col items-center md:items-end gap-6">
               <h4 className="text-white font-display font-bold uppercase tracking-widest border-b border-slate-800 pb-2 w-full text-center md:text-right">Connectivity</h4>
               <div className="flex gap-6">
-                <a href="https://youtube.com" className="text-slate-500 hover:text-rocket-500 transition-colors"><Youtube className="w-6 h-6" /></a>
-                <a href="https://instagram.com" className="text-slate-500 hover:text-rocket-500 transition-colors"><Instagram className="w-6 h-6" /></a>
-                <a href="https://facebook.com" className="text-slate-500 hover:text-rocket-500 transition-colors"><Facebook className="w-6 h-6" /></a>
-                <a href="https://tiktok.com" className="text-slate-500 hover:text-rocket-500 transition-colors"><TiktokIcon className="w-6 h-6" /></a>
+                <a href="https://www.youtube.com/channel/UCK-5XeKdcSSwr6BaMrmajWg" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-rocket-500 transition-colors">
+                  <Youtube className="w-6 h-6" />
+                </a>
+                <a href="https://www.instagram.com/rocketmotorcompany/" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-rocket-500 transition-colors">
+                  <Instagram className="w-6 h-6" />
+                </a>
+                <a href="https://www.facebook.com/p/rocketmotorcompany-100075844017220" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-rocket-500 transition-colors">
+                  <Facebook className="w-6 h-6" />
+                </a>
+                <a href="https://www.tiktok.com/@rocketmotorcompany" target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-rocket-500 transition-colors">
+                  <TiktokIcon className="w-6 h-6" />
+                </a>
               </div>
               <button onClick={() => handleNavigate('admin')} className="mt-8 flex items-center gap-2 text-slate-700 hover:text-rocket-500 transition-colors text-[10px] font-bold uppercase tracking-[0.2em]">
                 <Lock className="w-3 h-3" /> Personnel Access
@@ -549,7 +551,7 @@ const App: React.FC = () => {
            </div>
         </div>
         <div className="max-w-7xl mx-auto mt-16 pt-8 border-t border-slate-900 text-center md:text-left text-slate-700 text-[10px] font-bold uppercase tracking-widest">
-           &copy; 2024 Rocket Motor Company. Curated Classics & Restorations.
+           &copy; 2021 Rocket Motor Company. Curated Classics & Restorations.
         </div>
       </footer>
 
