@@ -1,12 +1,27 @@
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { CARS, DEFAULT_CATEGORIES, DEFAULT_SITE_CONTENT, DEFAULT_EVENTS } from './constants';
 import { Car, SiteContent, HeroSlide, Event as RmcEvent } from './types';
 import Concierge from './components/Concierge';
 import ComparisonChart from './components/ComparisonChart';
-import { Search, Info, Gauge, Zap, DollarSign, Menu, X, ArrowRight, ChevronDown, Check, Fuel, Calendar, ShieldCheck, Trophy, Wrench, MapPin, Phone, Globe, Clock, Sparkles, Lock, LayoutDashboard, LogOut, Plus, Trash2, Edit, Save, Image as ImageIcon, Layers, FileText, Settings, Upload, Instagram, Facebook, Youtube, MonitorPlay, Ticket, Eye, EyeOff } from 'lucide-react';
+import { 
+  Menu, X, ArrowRight, Check, Gauge, MapPin, Phone, 
+  Clock, Globe, Lock, LayoutDashboard, LogOut, Plus, 
+  Trash2, Edit, Save, Image as ImageIcon, Layers, 
+  FileText, Upload, Instagram, Facebook, Youtube, 
+  MonitorPlay, Ticket, Eye, EyeOff, ShieldCheck, 
+  Wrench, Trophy, Loader2, AlertCircle
+} from 'lucide-react';
 
-// --- Sub-components ---
+// --- Types for Data Service ---
+type AppData = {
+  inventory: Car[];
+  categories: string[];
+  siteContent: SiteContent;
+  events: RmcEvent[];
+};
+
+// --- Brand Components ---
 
 const BrandLogo = ({ className = "h-10", theme = 'light' }: { className?: string, theme?: 'dark' | 'light' }) => (
   <div className="flex items-center gap-3 select-none">
@@ -25,18 +40,12 @@ const BrandLogo = ({ className = "h-10", theme = 'light' }: { className?: string
 );
 
 const TiktokIcon = ({ className }: { className?: string }) => (
-  <svg 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="2" 
-    strokeLinecap="round" 
-    strokeLinejoin="round" 
-    className={className}
-  >
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
   </svg>
 );
+
+// --- Content Components ---
 
 const Navbar = ({ onNavigate }: { onNavigate: (page: string) => void }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -48,18 +57,20 @@ const Navbar = ({ onNavigate }: { onNavigate: (page: string) => void }) => {
           <div className="flex items-center cursor-pointer" onClick={() => onNavigate('home')}>
             <BrandLogo className="h-12 w-12" theme="light" />
           </div>
-          
           <div className="hidden md:flex space-x-8 items-center">
-            <button onClick={() => onNavigate('home')} className="text-slate-300 hover:text-rocket-500 transition-colors text-sm font-bold uppercase tracking-wider">Home</button>
-            <button onClick={() => onNavigate('showroom')} className="text-slate-300 hover:text-rocket-500 transition-colors text-sm font-bold uppercase tracking-wider">The Collection</button>
-            <button onClick={() => onNavigate('services')} className="text-slate-300 hover:text-rocket-500 transition-colors text-sm font-bold uppercase tracking-wider">Services</button>
-            <button onClick={() => onNavigate('events')} className="text-slate-300 hover:text-rocket-500 transition-colors text-sm font-bold uppercase tracking-wider">Events</button>
-            <button onClick={() => onNavigate('compare')} className="text-slate-300 hover:text-rocket-500 transition-colors text-sm font-bold uppercase tracking-wider">Compare</button>
-            <button className="bg-rocket-500 text-slate-950 px-6 py-2 rounded-none font-bold text-sm uppercase tracking-wider hover:bg-white transition-colors transform skew-x-[-10deg]">
+            {['home', 'showroom', 'events', 'compare'].map((page) => (
+              <button 
+                key={page}
+                onClick={() => onNavigate(page)} 
+                className="text-slate-300 hover:text-rocket-500 transition-colors text-sm font-bold uppercase tracking-wider"
+              >
+                {page === 'home' ? 'Home' : page === 'showroom' ? 'The Collection' : page}
+              </button>
+            ))}
+            <button className="bg-rocket-500 text-slate-950 px-6 py-2 font-bold text-sm uppercase tracking-wider hover:bg-white transition-colors transform skew-x-[-10deg]">
               <span className="transform skew-x-[10deg] inline-block">Inquire</span>
             </button>
           </div>
-
           <div className="md:hidden flex items-center">
             <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="text-white">
               {mobileMenuOpen ? <X /> : <Menu />}
@@ -67,15 +78,18 @@ const Navbar = ({ onNavigate }: { onNavigate: (page: string) => void }) => {
           </div>
         </div>
       </div>
-      
       {mobileMenuOpen && (
-        <div className="md:hidden bg-slate-900 border-t border-slate-800 shadow-lg">
+        <div className="md:hidden bg-slate-900 border-t border-slate-800 animate-in slide-in-from-top duration-300">
           <div className="px-4 pt-2 pb-4 space-y-1">
-             <button onClick={() => { onNavigate('home'); setMobileMenuOpen(false); }} className="block w-full text-left py-3 text-base font-bold text-slate-300 border-b border-slate-800 font-display uppercase">Home</button>
-             <button onClick={() => { onNavigate('showroom'); setMobileMenuOpen(false); }} className="block w-full text-left py-3 text-base font-bold text-slate-300 border-b border-slate-800 font-display uppercase">The Collection</button>
-             <button onClick={() => { onNavigate('services'); setMobileMenuOpen(false); }} className="block w-full text-left py-3 text-base font-bold text-slate-300 border-b border-slate-800 font-display uppercase">Services</button>
-             <button onClick={() => { onNavigate('events'); setMobileMenuOpen(false); }} className="block w-full text-left py-3 text-base font-bold text-slate-300 border-b border-slate-800 font-display uppercase">Events</button>
-             <button onClick={() => { onNavigate('compare'); setMobileMenuOpen(false); }} className="block w-full text-left py-3 text-base font-bold text-slate-300 font-display uppercase">Compare</button>
+             {['home', 'showroom', 'events', 'compare'].map(page => (
+               <button 
+                key={page}
+                onClick={() => { onNavigate(page); setMobileMenuOpen(false); }} 
+                className="block w-full text-left py-4 text-base font-bold text-slate-300 border-b border-slate-800 font-display uppercase"
+               >
+                 {page}
+               </button>
+             ))}
           </div>
         </div>
       )}
@@ -87,133 +101,79 @@ const Hero = ({ onShopNow, content, inventory }: { onShopNow: () => void, conten
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const slides = useMemo(() => {
-    if (content.slides && content.slides.length > 0) {
-      return content.slides;
-    }
+    if (content.slides && content.slides.length > 0) return content.slides;
     return inventory.slice(0, 5).map(c => ({
       id: c.id,
       image: c.images[0],
       title: `${c.year} ${c.make} ${c.model}`,
-      subtitle: 'Featured Vehicle'
+      subtitle: 'Featured Collection'
     }));
   }, [content.slides, inventory]);
 
   useEffect(() => {
-    if (slides.length === 0) return;
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 5000); 
+    if (slides.length <= 1) return;
+    const timer = setInterval(() => setCurrentSlide(prev => (prev + 1) % slides.length), 6000);
     return () => clearInterval(timer);
   }, [slides.length]);
 
-  const currentHero = slides[currentSlide];
+  if (slides.length === 0) return null;
 
   return (
-    <div className="relative h-[700px] overflow-hidden bg-slate-950">
+    <div className="relative h-[80vh] min-h-[600px] overflow-hidden bg-slate-950">
       {slides.map((slide, index) => (
         <div 
           key={slide.id}
-          className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-            index === currentSlide ? 'opacity-100' : 'opacity-0'
-          }`}
+          className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-100' : 'opacity-0'}`}
         >
-          <img 
-            src={slide.image} 
-            alt={slide.title} 
-            className="w-full h-full object-cover opacity-40 mix-blend-luminosity"
-          />
+          <img src={slide.image} alt={slide.title} className="w-full h-full object-cover opacity-40 mix-blend-luminosity scale-105 animate-slow-zoom" />
         </div>
       ))}
-
-      <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-transparent pointer-events-none" />
-      <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 to-transparent pointer-events-none" />
-      
+      <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-r from-slate-950/80 to-transparent" />
       <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-center items-start z-10">
-        <span className="text-rocket-500 font-bold tracking-[0.3em] text-sm md:text-base mb-4 uppercase">{content.estYear}</span>
-        <h1 className="text-6xl md:text-8xl text-white font-display font-bold leading-none mb-6 uppercase tracking-tighter" dangerouslySetInnerHTML={{ __html: content.title.replace('.', '<span class="text-rocket-500">.</span>') }}>
-        </h1>
-        <p className="text-xl text-slate-400 max-w-xl mb-10 font-light leading-relaxed border-l-4 border-rocket-500 pl-6">
-          {content.subtitle}
-        </p>
-        
-        <div className="flex flex-col sm:flex-row gap-4 mb-12">
-          <button 
-            onClick={onShopNow}
-            className="px-10 py-4 bg-rocket-500 text-slate-950 font-display font-bold uppercase tracking-wider hover:bg-white transition-all shadow-xl shadow-rocket-900/20 flex items-center justify-center gap-2"
-          >
+        <span className="text-rocket-500 font-bold tracking-[0.4em] text-sm mb-4 uppercase animate-fade-in">{content.estYear}</span>
+        <h1 className="text-6xl md:text-8xl text-white font-display font-bold leading-none mb-6 uppercase tracking-tighter" dangerouslySetInnerHTML={{ __html: content.title.replace('.', '<span class="text-rocket-500">.</span>') }} />
+        <p className="text-xl text-slate-400 max-w-xl mb-10 font-light leading-relaxed border-l-4 border-rocket-500 pl-6">{content.subtitle}</p>
+        <div className="flex flex-col sm:flex-row gap-4">
+          <button onClick={onShopNow} className="px-10 py-4 bg-rocket-500 text-slate-950 font-display font-bold uppercase tracking-wider hover:bg-white transition-all shadow-xl shadow-rocket-900/20 flex items-center justify-center gap-2">
             View Inventory <ArrowRight className="w-5 h-5" />
           </button>
-          <button className="px-10 py-4 border-2 border-slate-700 text-white font-display font-bold uppercase tracking-wider hover:border-rocket-500 hover:text-rocket-500 transition-all">
-            Sell Your Classic
-          </button>
         </div>
-
-        {slides.length > 0 && currentHero && (
-          <div className="absolute bottom-10 right-4 md:right-8 flex flex-col items-end gap-2">
-              <div className="flex gap-2 mb-2">
-                  {slides.map((_, idx) => (
-                      <button 
-                          key={idx}
-                          onClick={() => setCurrentSlide(idx)}
-                          className={`h-1 transition-all duration-300 ${idx === currentSlide ? 'w-8 bg-rocket-500' : 'w-4 bg-slate-600 hover:bg-slate-400'}`}
-                      />
-                  ))}
-              </div>
-              <div className="text-right animate-fade-in">
-                  <p className="text-rocket-500 font-bold uppercase text-xs tracking-widest">{currentHero.subtitle}</p>
-                  <p className="text-white font-display uppercase text-lg">{currentHero.title}</p>
-              </div>
-          </div>
-        )}
+      </div>
+      <div className="absolute bottom-10 right-4 md:right-8 flex gap-2">
+        {slides.map((_, idx) => (
+          <button key={idx} onClick={() => setCurrentSlide(idx)} className={`h-1 transition-all duration-300 ${idx === currentSlide ? 'w-12 bg-rocket-500' : 'w-4 bg-slate-700'}`} />
+        ))}
       </div>
     </div>
   );
 };
 
-const CarCard: React.FC<{ car: Car; onClick: () => void }> = ({ car, onClick }) => {
-  return (
-    <div 
-      onClick={onClick}
-      className="group bg-slate-900 rounded-none overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl hover:shadow-rocket-900/10 transition-all duration-500 border border-slate-800 hover:border-rocket-500/50"
-    >
-      <div className="relative h-64 overflow-hidden">
-        <img 
-          src={car.images[0]} 
-          alt={`${car.make} ${car.model}`} 
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale-[30%] group-hover:grayscale-0"
-        />
-        <div className="absolute top-4 left-4">
-           <span className="bg-rocket-500 text-slate-950 text-xs font-bold px-3 py-1 uppercase tracking-wider shadow-lg">
-             {car.type}
-           </span>
-        </div>
-      </div>
-      <div className="p-6">
-        <div className="flex justify-between items-start mb-4">
-          <div>
-            <p className="text-rocket-500 text-xs font-bold uppercase tracking-widest mb-1">{car.year} {car.make}</p>
-            <h3 className="text-2xl font-display font-bold text-white group-hover:text-rocket-500 transition-colors">{car.model}</h3>
-          </div>
-        </div>
-        
-        <p className="text-slate-400 text-sm line-clamp-2 mb-6 font-light">{car.description}</p>
-
-        <div className="flex justify-between items-center border-t border-slate-800 pt-4">
-           <div className="flex items-center gap-2 text-slate-400 font-medium text-sm">
-             <Gauge className="w-4 h-4 text-rocket-500" />
-             {car.specs.mileage.toLocaleString()} mi
-           </div>
-        </div>
+// Use React.FC to properly handle the key prop when mapping in lists
+const CarCard: React.FC<{ car: Car; onClick: () => void }> = ({ car, onClick }) => (
+  <div onClick={onClick} className="group bg-slate-900 overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 border border-slate-800 hover:border-rocket-500/50">
+    <div className="relative h-64 overflow-hidden">
+      <img src={car.images[0]} alt={car.model} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale-[30%] group-hover:grayscale-0" />
+      <div className="absolute top-4 left-4">
+        <span className="bg-rocket-500 text-slate-950 text-[10px] font-bold px-3 py-1 uppercase tracking-widest">{car.type}</span>
       </div>
     </div>
-  );
-};
+    <div className="p-6">
+      <p className="text-rocket-500 text-xs font-bold uppercase tracking-widest mb-1">{car.year} {car.make}</p>
+      <h3 className="text-2xl font-display font-bold text-white mb-4 uppercase">{car.model}</h3>
+      <div className="flex items-center gap-2 text-slate-400 text-sm border-t border-slate-800 pt-4 font-medium">
+        <Gauge className="w-4 h-4 text-rocket-500" /> {car.specs.mileage.toLocaleString()} miles
+      </div>
+    </div>
+  </div>
+);
 
+// Use React.FC to properly handle the key prop when mapping in lists
 const EventCard: React.FC<{ event: RmcEvent }> = ({ event }) => (
   <div className="group relative bg-slate-950 border border-slate-800 overflow-hidden shadow-xl hover:border-rocket-500 transition-all duration-500">
-    <div className="h-48 overflow-hidden relative">
+    <div className="h-56 overflow-hidden relative">
       <img src={event.image} alt={event.title} className="w-full h-full object-cover opacity-60 group-hover:scale-110 transition-transform duration-700 grayscale hover:grayscale-0" />
-      <div className="absolute top-4 right-4 bg-rocket-500 text-slate-950 text-[10px] font-bold uppercase tracking-[0.2em] px-3 py-1.5 shadow-lg transform skew-x-[-15deg]">
+      <div className="absolute top-4 right-4 bg-rocket-500 text-slate-950 text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 shadow-lg transform skew-x-[-15deg]">
         <span className="transform skew-x-[15deg] block">{event.date}</span>
       </div>
     </div>
@@ -221,1142 +181,406 @@ const EventCard: React.FC<{ event: RmcEvent }> = ({ event }) => (
       <div className="flex items-center gap-2 text-rocket-500 text-[10px] font-bold uppercase tracking-widest mb-3">
         <MapPin className="w-3 h-3" /> {event.location}
       </div>
-      <h3 className="text-xl font-display font-bold text-white uppercase mb-3 leading-tight group-hover:text-rocket-500 transition-colors">{event.title}</h3>
+      <h3 className="text-xl font-display font-bold text-white uppercase mb-3 leading-tight">{event.title}</h3>
       <p className="text-slate-500 text-sm font-light leading-relaxed mb-6 line-clamp-2">{event.description}</p>
-      <button className="flex items-center gap-2 text-white text-xs font-bold uppercase tracking-widest group/btn">
-        Register Interest <ArrowRight className="w-3 h-3 group-hover/btn:translate-x-1 transition-transform" />
+      <button className="flex items-center gap-2 text-white text-xs font-bold uppercase tracking-widest hover:text-rocket-500 transition-colors">
+        Register Interest <ArrowRight className="w-3 h-3" />
       </button>
     </div>
   </div>
 );
 
-const CarDetailModal = ({ car, onClose }: { car: Car; onClose: () => void }) => {
-  const [activeImage, setActiveImage] = useState(0);
+// --- Admin Sub-Sections ---
 
-  if (!car) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-slate-950/95 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-slate-900 w-full max-w-6xl rounded-lg overflow-hidden shadow-2xl border border-slate-800 animate-fade-in flex flex-col md:flex-row max-h-[95vh]">
-        <button 
-          onClick={onClose}
-          className="absolute top-4 right-4 z-10 p-2 bg-black/30 hover:bg-rocket-500 text-white rounded-full transition-colors backdrop-blur-md"
-        >
-          <X className="w-6 h-6" />
-        </button>
-        
-        <div className="w-full md:w-3/5 relative bg-slate-800 flex flex-col">
-           <div className="h-64 md:h-[400px] w-full relative">
-              <img src={car.images[activeImage]} alt={car.model} className="w-full h-full object-cover" />
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-slate-900 to-transparent h-40 flex items-end p-8 pointer-events-none">
-                  <div className="text-white">
-                    <p className="text-sm font-bold uppercase tracking-widest text-rocket-500 mb-1">{car.type}</p>
-                    <h2 className="text-4xl md:text-5xl font-display font-bold">{car.year} {car.make} {car.model}</h2>
-                  </div>
-              </div>
-           </div>
-           <div className="p-4 bg-slate-900 flex gap-3 overflow-x-auto border-b border-slate-800">
-             {car.images.map((img, idx) => (
-               <button 
-                 key={idx} 
-                 onClick={() => setActiveImage(idx)}
-                 className={`w-20 h-16 flex-shrink-0 border-2 transition-all ${activeImage === idx ? 'border-rocket-500 opacity-100' : 'border-transparent opacity-60 hover:opacity-100'}`}
-               >
-                 <img src={img} alt="Thumbnail" className="w-full h-full object-cover" />
-               </button>
-             ))}
-           </div>
-        </div>
-        
-        <div className="w-full md:w-2/5 p-8 md:p-10 overflow-y-auto bg-slate-900 flex flex-col">
-          <div className="prose prose-invert mb-8">
-            <h3 className="text-white font-display font-bold uppercase text-lg mb-3">Vehicle Story</h3>
-            <p className="text-slate-400 leading-relaxed font-light">
-              {car.description}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-6 mb-8">
-            <div className="border-l-2 border-rocket-500 pl-4">
-              <p className="text-slate-500 text-xs uppercase font-bold tracking-wider mb-1">Odometer</p>
-              <p className="text-xl font-bold text-white font-display">{car.specs.mileage.toLocaleString()}</p>
-            </div>
-            <div className="border-l-2 border-slate-700 pl-4">
-              <p className="text-slate-500 text-xs uppercase font-bold tracking-wider mb-1">Engine</p>
-              <p className="text-lg font-bold text-white font-display truncate" title={car.specs.engine}>{car.specs.engine}</p>
-            </div>
-             <div className="border-l-2 border-slate-700 pl-4">
-              <p className="text-slate-500 text-xs uppercase font-bold tracking-wider mb-1">0-60 mph</p>
-              <p className="text-xl font-bold text-white font-display">{car.specs.zeroToSixty}s</p>
-            </div>
-            <div className="border-l-2 border-slate-700 pl-4">
-              <p className="text-slate-500 text-xs uppercase font-bold tracking-wider mb-1">Top Speed</p>
-              <p className="text-xl font-bold text-white font-display">{car.specs.topSpeedMph} mph</p>
-            </div>
-          </div>
-
-          <div className="mb-auto">
-            <h3 className="text-white font-display font-bold uppercase text-lg mb-4">Build Features</h3>
-            <ul className="space-y-3">
-              {car.features.map((feat, idx) => (
-                <li key={idx} className="flex items-center text-slate-300 text-sm">
-                  <Check className="w-4 h-4 text-rocket-500 mr-3" /> {feat}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="mt-8 space-y-3">
-             <button className="w-full py-4 bg-rocket-500 text-slate-950 font-display font-bold uppercase tracking-widest hover:bg-white transition-colors">
-              Inquire to Purchase
-            </button>
-            <button className="w-full py-4 border-2 border-slate-700 text-white font-display font-bold uppercase tracking-widest hover:border-rocket-500 hover:text-rocket-500 transition-colors">
-              Schedule Viewing
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// --- Admin Components ---
-
-const AdminDashboard = ({ 
-  cars, 
-  setCars,
-  categories,
-  setCategories,
-  siteContent,
-  setSiteContent,
-  events,
-  setEvents,
-  onLogout 
+const VehicleAdmin = ({ 
+  cars, categories, onEdit, onDelete, onCreate 
 }: { 
-  cars: Car[], 
-  setCars: (cars: Car[]) => void, 
-  categories: string[],
-  setCategories: (cats: string[]) => void,
-  siteContent: SiteContent,
-  setSiteContent: (content: SiteContent) => void,
-  events: RmcEvent[],
-  setEvents: (ev: RmcEvent[]) => void,
-  onLogout: () => void 
-}) => {
-  const [activeTab, setActiveTab] = useState<'vehicles' | 'categories' | 'content' | 'carousel' | 'events'>('vehicles');
-  const [editingCar, setEditingCar] = useState<Car | null>(null);
-  const [editingEvent, setEditingEvent] = useState<RmcEvent | null>(null);
-
-  const initialCarState: Car = {
-    id: '',
-    make: '',
-    model: '',
-    year: new Date().getFullYear(),
-    price: 0,
-    type: categories[0] || 'Uncategorized',
-    images: [''],
-    description: '',
-    specs: {
-      horsepower: 0,
-      topSpeedMph: 0,
-      zeroToSixty: 0,
-      engine: '',
-      mileage: 0,
-      mpgCity: 0,
-      mpgHwy: 0
-    },
-    features: []
-  };
-
-  const initialEventState: RmcEvent = {
-    id: '',
-    title: '',
-    date: '',
-    location: '',
-    description: '',
-    image: ''
-  };
-
-  const [carFormData, setCarFormData] = useState<Car>(initialCarState);
-  const [eventFormData, setEventFormData] = useState<RmcEvent>(initialEventState);
-
-  const handleEditCar = (car: Car) => {
-    setEditingCar(car);
-    setCarFormData(car);
-    setActiveTab('vehicles');
-  };
-
-  const handleCreateCar = () => {
-    setEditingCar(null);
-    setCarFormData({ ...initialCarState, id: Date.now().toString() });
-  };
-
-  const handleDeleteCar = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this vehicle?')) {
-      setCars(cars.filter(c => c.id !== id));
-    }
-  };
-
-  const handleSaveCar = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (editingCar) {
-      setCars(cars.map(c => c.id === editingCar.id ? carFormData : c));
-    } else {
-      setCars([...cars, { ...carFormData, id: Date.now().toString() }]);
-    }
-    setEditingCar(null);
-    setCarFormData(initialCarState);
-  };
-
-  // Event Handlers
-  const handleEditEvent = (ev: RmcEvent) => {
-    setEditingEvent(ev);
-    setEventFormData(ev);
-  };
-
-  const handleCreateEvent = () => {
-    setEditingEvent(null);
-    setEventFormData({ ...initialEventState, id: Date.now().toString() });
-  };
-
-  const handleDeleteEvent = (id: string) => {
-    if (window.confirm('Delete this event?')) {
-      setEvents(events.filter(e => e.id !== id));
-    }
-  };
-
-  const handleSaveEvent = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (editingEvent) {
-      setEvents(events.map(ev => ev.id === editingEvent.id ? eventFormData : ev));
-    } else {
-      setEvents([...events, { ...eventFormData, id: Date.now().toString() }]);
-    }
-    setEditingEvent(null);
-    setEventFormData(initialEventState);
-  };
-
-  const handleEventImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (typeof reader.result === 'string') {
-          setEventFormData(prev => ({ ...prev, image: reader.result as string }));
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const updateSpec = (field: keyof typeof carFormData.specs, value: string | number) => {
-    setCarFormData(prev => ({
-      ...prev,
-      specs: { ...prev.specs, [field]: value }
-    }));
-  };
-
-  const handleImageChange = (index: number, value: string) => {
-    const newImages = [...carFormData.images];
-    newImages[index] = value;
-    setCarFormData({ ...carFormData, images: newImages });
-  };
-
-  const addImageField = () => {
-    setCarFormData({ ...carFormData, images: [...carFormData.images, ''] });
-  };
-  
-  const removeImageField = (index: number) => {
-    if (carFormData.images.length > 1) {
-      const newImages = carFormData.images.filter((_, i) => i !== index);
-      setCarFormData({ ...carFormData, images: newImages });
-    }
-  };
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      Array.from(files).forEach((file: File) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-           if (typeof reader.result === 'string') {
-             setCarFormData(prev => ({
-                 ...prev, 
-                 images: [...prev.images.filter(i => i.trim() !== ''), reader.result as string]
-             }));
-           }
-        };
-        reader.readAsDataURL(file);
-      });
-    }
-  };
-
-  const [newCategory, setNewCategory] = useState('');
-  
-  const handleAddCategory = () => {
-    if (newCategory && !categories.includes(newCategory)) {
-      setCategories([...categories, newCategory]);
-      setNewCategory('');
-    }
-  };
-
-  const handleDeleteCategory = (cat: string) => {
-    if (window.confirm(`Delete category "${cat}"? Vehicles with this category will be preserved.`)) {
-      setCategories(categories.filter(c => c !== cat));
-    }
-  };
-
-  const [contentForm, setContentForm] = useState<SiteContent>(siteContent);
-  const handleSaveContent = () => {
-    setSiteContent(contentForm);
-    alert('Site content updated successfully!');
-  };
-
-  const handleAddSlide = () => {
-    const newSlide: HeroSlide = { 
-      id: Date.now().toString(), 
-      image: '', 
-      title: 'New Featured Vehicle', 
-      subtitle: 'Featured' 
-    };
-    setContentForm(prev => ({
-      ...prev,
-      hero: {
-        ...prev.hero,
-        slides: [...(prev.hero.slides || []), newSlide]
-      }
-    }));
-  };
-
-  const handleDeleteSlide = (index: number) => {
-    setContentForm(prev => {
-      const newSlides = [...(prev.hero.slides || [])];
-      newSlides.splice(index, 1);
-      return {
-        ...prev,
-        hero: {
-          ...prev.hero,
-          slides: newSlides
-        }
-      };
-    });
-  };
-
-  const handleSlideChange = (index: number, field: keyof HeroSlide, value: string) => {
-    setContentForm(prev => {
-      const newSlides = [...(prev.hero.slides || [])];
-      newSlides[index] = { ...newSlides[index], [field]: value };
-      return {
-        ...prev,
-        hero: {
-          ...prev.hero,
-          slides: newSlides
-        }
-      };
-    });
-  };
-
-  const handleCarouselFileUpload = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      const file = files[0];
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (typeof reader.result === 'string') {
-          handleSlideChange(index, 'image', reader.result);
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const renderSidebar = () => (
-    <div className="w-full md:w-64 bg-slate-900 border-r border-slate-800 p-6 flex flex-col h-full min-h-screen">
-      <div className="mb-10 flex items-center gap-3 text-white">
-        <LayoutDashboard className="text-rocket-500" />
-        <span className="font-display font-bold text-xl uppercase tracking-wider">CMS Panel</span>
-      </div>
-      
-      <nav className="space-y-2 flex-1">
-        <button 
-          onClick={() => { setActiveTab('vehicles'); setEditingCar(null); setCarFormData(initialCarState); }}
-          className={`w-full text-left px-4 py-3 rounded-md flex items-center gap-3 font-bold uppercase text-xs tracking-wider transition-all ${activeTab === 'vehicles' ? 'bg-rocket-500 text-slate-950' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
-        >
-          <ImageIcon className="w-4 h-4" /> Vehicles
-        </button>
-        <button 
-          onClick={() => setActiveTab('carousel')}
-          className={`w-full text-left px-4 py-3 rounded-md flex items-center gap-3 font-bold uppercase text-xs tracking-wider transition-all ${activeTab === 'carousel' ? 'bg-rocket-500 text-slate-950' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
-        >
-          <MonitorPlay className="w-4 h-4" /> Carousel
-        </button>
-        <button 
-          onClick={() => { setActiveTab('events'); setEditingEvent(null); setEventFormData(initialEventState); }}
-          className={`w-full text-left px-4 py-3 rounded-md flex items-center gap-3 font-bold uppercase text-xs tracking-wider transition-all ${activeTab === 'events' ? 'bg-rocket-500 text-slate-950' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
-        >
-          <Ticket className="w-4 h-4" /> Events
-        </button>
-        <button 
-          onClick={() => setActiveTab('categories')}
-          className={`w-full text-left px-4 py-3 rounded-md flex items-center gap-3 font-bold uppercase text-xs tracking-wider transition-all ${activeTab === 'categories' ? 'bg-rocket-500 text-slate-950' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
-        >
-          <Layers className="w-4 h-4" /> Categories
-        </button>
-        <button 
-          onClick={() => { setActiveTab('content'); setContentForm(siteContent); }}
-          className={`w-full text-left px-4 py-3 rounded-md flex items-center gap-3 font-bold uppercase text-xs tracking-wider transition-all ${activeTab === 'content' ? 'bg-rocket-500 text-slate-950' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
-        >
-          <FileText className="w-4 h-4" /> Site Content
-        </button>
-      </nav>
-
-      <button onClick={onLogout} className="mt-auto flex items-center gap-3 text-slate-500 hover:text-white px-4 py-3 font-bold uppercase text-xs tracking-wider">
-        <LogOut className="w-4 h-4" /> Logout
+  cars: Car[], categories: string[], onEdit: (c: Car) => void, onDelete: (id: string) => void, onCreate: () => void 
+}) => (
+  <div className="space-y-6">
+    <div className="flex justify-between items-center">
+      <h2 className="text-2xl font-display font-bold text-white uppercase">Inventory Manager</h2>
+      <button onClick={onCreate} className="bg-rocket-500 text-slate-950 px-6 py-2 font-bold uppercase text-xs flex items-center gap-2 hover:bg-white transition-all">
+        <Plus className="w-4 h-4" /> New Vehicle
       </button>
     </div>
-  );
-
-  const renderVehicleForm = () => (
-    <div className="bg-slate-900 p-8 border border-slate-800 shadow-sm animate-fade-in">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-display font-bold text-white uppercase">{editingCar ? 'Edit Vehicle' : 'Add New Vehicle'}</h2>
-        <button onClick={() => { setEditingCar(null); setCarFormData(initialCarState); }} className="text-slate-400 hover:text-white text-xs font-bold uppercase">Cancel</button>
-      </div>
-      <form onSubmit={handleSaveCar} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Year</label>
-              <input type="number" required value={carFormData.year} onChange={e => setCarFormData({...carFormData, year: parseInt(e.target.value)})} className="w-full p-2 bg-slate-800 border border-slate-700 text-white focus:border-rocket-500 outline-none" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Make</label>
-              <input type="text" required value={carFormData.make} onChange={e => setCarFormData({...carFormData, make: e.target.value})} className="w-full p-2 bg-slate-800 border border-slate-700 text-white focus:border-rocket-500 outline-none" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Model</label>
-              <input type="text" required value={carFormData.model} onChange={e => setCarFormData({...carFormData, model: e.target.value})} className="w-full p-2 bg-slate-800 border border-slate-700 text-white focus:border-rocket-500 outline-none" />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Category</label>
-              <select value={carFormData.type} onChange={e => setCarFormData({...carFormData, type: e.target.value})} className="w-full p-2 bg-slate-800 border border-slate-700 text-white focus:border-rocket-500 outline-none">
-                {categories.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </div>
-          </div>
-
-          <div>
-             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Image Gallery</label>
-             <div className="space-y-3 mb-4">
-               {carFormData.images.map((img, idx) => (
-                 <div key={idx} className="flex items-center gap-3 bg-slate-800 p-2 border border-slate-700">
-                   <div className="w-16 h-12 bg-slate-900 flex-shrink-0 overflow-hidden relative">
-                      {img ? (
-                          <img src={img} alt="Preview" className="w-full h-full object-cover" />
-                      ) : (
-                          <div className="w-full h-full flex items-center justify-center text-slate-600"><ImageIcon className="w-4 h-4"/></div>
-                      )}
-                   </div>
-                   <input 
-                      type="text" 
-                      placeholder="Image URL..." 
-                      value={img.startsWith('data:') ? '(Uploaded Image)' : img} 
-                      readOnly={img.startsWith('data:')}
-                      onChange={e => handleImageChange(idx, e.target.value)} 
-                      className={`flex-1 p-2 bg-slate-900 border border-slate-700 text-slate-300 text-xs focus:border-rocket-500 outline-none ${img.startsWith('data:') ? 'italic text-slate-500 cursor-not-allowed' : ''}`}
-                   />
-                   <button type="button" onClick={() => removeImageField(idx)} className="p-2 text-slate-500 hover:text-red-500"><X className="w-4 h-4" /></button>
-                 </div>
-               ))}
-             </div>
-             <div className="flex gap-4">
-                <button type="button" onClick={addImageField} className="text-xs font-bold text-rocket-500 hover:text-white uppercase tracking-wider flex items-center gap-2 px-4 py-2 border border-slate-700 bg-slate-800">
-                    <Plus className="w-3 h-3" /> Add URL
-                </button>
-                <label className="text-xs font-bold text-rocket-500 hover:text-white uppercase tracking-wider flex items-center gap-2 px-4 py-2 border border-slate-700 bg-slate-800 cursor-pointer">
-                    <Upload className="w-3 h-3" /> Upload Local
-                    <input type="file" multiple accept="image/*" onChange={handleFileUpload} className="hidden" />
-                </label>
-             </div>
-          </div>
-
-          <div>
-             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Description</label>
-             <textarea rows={4} required value={carFormData.description} onChange={e => setCarFormData({...carFormData, description: e.target.value})} className="w-full p-2 bg-slate-800 border border-slate-700 text-white focus:border-rocket-500 outline-none" />
-          </div>
-
-          <div className="border-t border-slate-800 pt-6">
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Specifications</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div>
-                 <label className="block text-xs font-bold text-slate-500 mb-1">Engine</label>
-                 <input type="text" value={carFormData.specs.engine} onChange={e => updateSpec('engine', e.target.value)} className="w-full p-2 bg-slate-800 border border-slate-700 text-white text-sm" />
-              </div>
-              <div>
-                 <label className="block text-xs font-bold text-slate-500 mb-1">HP</label>
-                 <input type="number" value={carFormData.specs.horsepower} onChange={e => updateSpec('horsepower', parseInt(e.target.value))} className="w-full p-2 bg-slate-800 border border-slate-700 text-white text-sm" />
-              </div>
-              <div>
-                 <label className="block text-xs font-bold text-slate-500 mb-1">0-60</label>
-                 <input type="number" step="0.1" value={carFormData.specs.zeroToSixty} onChange={e => updateSpec('zeroToSixty', parseFloat(e.target.value))} className="w-full p-2 bg-slate-800 border border-slate-700 text-white text-sm" />
-              </div>
-              <div>
-                 <label className="block text-xs font-bold text-slate-500 mb-1">Mileage</label>
-                 <input type="number" value={carFormData.specs.mileage} onChange={e => updateSpec('mileage', parseInt(e.target.value))} className="w-full p-2 bg-slate-800 border border-slate-700 text-white text-sm" />
-              </div>
-            </div>
-          </div>
-          
-          <button type="submit" className="bg-rocket-500 text-slate-950 px-8 py-3 font-bold uppercase tracking-widest hover:bg-white transition-colors flex items-center gap-2">
-            <Save className="w-4 h-4" /> Save Record
-          </button>
-      </form>
-    </div>
-  );
-
-  const renderEventForm = () => (
-    <div className="bg-slate-900 p-8 border border-slate-800 shadow-sm animate-fade-in">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-display font-bold text-white uppercase">{editingEvent ? 'Edit Event' : 'Add New Event'}</h2>
-        <button onClick={() => { setEditingEvent(null); setEventFormData(initialEventState); }} className="text-slate-400 hover:text-white text-xs font-bold uppercase">Cancel</button>
-      </div>
-      <form onSubmit={handleSaveEvent} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Event Title</label>
-              <input type="text" required value={eventFormData.title} onChange={e => setEventFormData({...eventFormData, title: e.target.value})} className="w-full p-3 bg-slate-800 border border-slate-700 text-white focus:border-rocket-500 outline-none" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Date (e.g., Oct 15, 2023)</label>
-              <input type="text" required value={eventFormData.date} onChange={e => setEventFormData({...eventFormData, date: e.target.value})} className="w-full p-3 bg-slate-800 border border-slate-700 text-white focus:border-rocket-500 outline-none" />
-            </div>
-          </div>
-          <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Location</label>
-              <input type="text" required value={eventFormData.location} onChange={e => setEventFormData({...eventFormData, location: e.target.value})} className="w-full p-3 bg-slate-800 border border-slate-700 text-white focus:border-rocket-500 outline-none" />
-          </div>
-          <div>
-             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Description</label>
-             <textarea rows={3} required value={eventFormData.description} onChange={e => setEventFormData({...eventFormData, description: e.target.value})} className="w-full p-3 bg-slate-800 border border-slate-700 text-white focus:border-rocket-500 outline-none" />
-          </div>
-          <div>
-             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Event Poster / Image</label>
-             <div className="flex items-center gap-4">
-               <div className="w-24 h-16 bg-slate-800 border border-slate-700 flex-shrink-0 overflow-hidden">
-                 {eventFormData.image ? <img src={eventFormData.image} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-600"><ImageIcon className="w-5 h-5" /></div>}
-               </div>
-               <label className="flex-1 cursor-pointer bg-slate-800 hover:bg-slate-700 border border-slate-700 p-3 text-slate-400 text-sm flex items-center gap-2">
-                 <Upload className="w-4 h-4" /> {eventFormData.image ? 'Change Image' : 'Upload Image'}
-                 <input type="file" accept="image/*" className="hidden" onChange={handleEventImageUpload} />
-               </label>
-             </div>
-          </div>
-          <button type="submit" className="bg-rocket-500 text-slate-950 px-8 py-3 font-bold uppercase tracking-widest hover:bg-white transition-colors">
-            Save Event
-          </button>
-      </form>
-    </div>
-  );
-
-  return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-slate-950">
-      {renderSidebar()}
-      
-      <div className="flex-1 p-8 overflow-y-auto">
-        {activeTab === 'vehicles' && (
-          <div className="max-w-5xl mx-auto space-y-8">
-            <div className="flex justify-between items-center">
-              <div>
-                 <h1 className="text-3xl font-display font-bold text-white uppercase">Vehicle Inventory</h1>
-                 <p className="text-slate-400">Manage showroom listings and details.</p>
-              </div>
-              {!editingCar && (
-                <button onClick={handleCreateCar} className="bg-rocket-500 text-slate-950 px-6 py-2 font-bold uppercase tracking-wider hover:bg-white transition-colors flex items-center gap-2">
-                  <Plus className="w-4 h-4" /> Add Vehicle
-                </button>
-              )}
-            </div>
-
-            {editingCar || carFormData.id ? renderVehicleForm() : (
-              <div className="bg-slate-900 border border-slate-800 shadow-sm overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-slate-800 border-b border-slate-700">
-                      <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Image</th>
-                      <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Vehicle</th>
-                      <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Category</th>
-                      <th className="p-4 text-xs font-bold text-slate-400 uppercase tracking-wider text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {cars.map(car => (
-                      <tr key={car.id} className="border-b border-slate-800 hover:bg-slate-800/50">
-                        <td className="p-4">
-                          <img src={car.images[0]} alt={car.model} className="w-16 h-12 object-cover" />
-                        </td>
-                        <td className="p-4">
-                          <div className="font-bold text-white">{car.year} {car.make}</div>
-                          <div className="text-sm text-slate-400">{car.model}</div>
-                        </td>
-                        <td className="p-4 text-sm text-slate-400">{car.type}</td>
-                        <td className="p-4 text-right space-x-2">
-                          <button onClick={() => handleEditCar(car)} className="p-2 text-slate-500 hover:text-rocket-500"><Edit className="w-4 h-4" /></button>
-                          <button onClick={() => handleDeleteCar(car.id)} className="p-2 text-slate-500 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        )}
-
-        {activeTab === 'events' && (
-          <div className="max-w-4xl mx-auto space-y-8">
-            <div className="flex justify-between items-center">
-              <div>
-                 <h1 className="text-3xl font-display font-bold text-white uppercase">Event Calendar</h1>
-                 <p className="text-slate-400">Promote gatherings and track days.</p>
-              </div>
-              {!editingEvent && (
-                <button onClick={handleCreateEvent} className="bg-rocket-500 text-slate-950 px-6 py-2 font-bold uppercase tracking-wider hover:bg-white transition-colors flex items-center gap-2">
-                  <Plus className="w-4 h-4" /> Create Event
-                </button>
-              )}
-            </div>
-
-            {editingEvent || eventFormData.id ? renderEventForm() : (
-              <div className="grid grid-cols-1 gap-4">
-                {events.map(ev => (
-                  <div key={ev.id} className="bg-slate-900 border border-slate-800 p-6 flex justify-between items-center group hover:border-rocket-500 transition-colors">
-                    <div className="flex items-center gap-6">
-                      <div className="w-20 h-20 bg-slate-800 overflow-hidden">
-                        <img src={ev.image} className="w-full h-full object-cover" />
-                      </div>
-                      <div>
-                        <h3 className="text-white font-bold uppercase tracking-wider">{ev.title}</h3>
-                        <p className="text-rocket-500 text-xs font-bold mt-1">{ev.date} @ {ev.location}</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <button onClick={() => handleEditEvent(ev)} className="p-2 text-slate-500 hover:text-rocket-500"><Edit className="w-4 h-4" /></button>
-                      <button onClick={() => handleDeleteEvent(ev.id)} className="p-2 text-slate-500 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {activeTab === 'carousel' && (
-          <div className="max-w-4xl mx-auto space-y-8">
-            <div className="flex justify-between items-center">
-              <div>
-                 <h1 className="text-3xl font-display font-bold text-white uppercase">Hero Carousel</h1>
-                 <p className="text-slate-400">Manage home page slides.</p>
-              </div>
-              <button onClick={handleSaveContent} className="bg-rocket-500 text-slate-950 px-6 py-2 font-bold uppercase tracking-wider flex items-center gap-2">
-                  <Save className="w-4 h-4" /> Save Carousel
-               </button>
-            </div>
-
-            <div className="bg-slate-900 border border-slate-800 p-8 space-y-6">
-               {(contentForm.hero.slides && contentForm.hero.slides.length > 0) ? (
-                 contentForm.hero.slides.map((slide, idx) => (
-                   <div key={slide.id} className="bg-slate-800 p-6 border border-slate-700 flex flex-col md:flex-row gap-6">
-                      <div className="w-full md:w-1/3 space-y-3">
-                         <div className="h-40 bg-slate-900 relative border border-slate-700">
-                           {slide.image ? (
-                             <img src={slide.image} alt="Preview" className="w-full h-full object-cover" />
-                           ) : (
-                             <div className="w-full h-full flex items-center justify-center text-slate-600">
-                               <ImageIcon className="w-8 h-8" />
-                             </div>
-                           )}
-                         </div>
-                         <label className="w-full cursor-pointer bg-slate-700 hover:bg-rocket-500 hover:text-slate-950 text-white text-xs font-bold uppercase py-2 flex items-center justify-center gap-2">
-                            <Upload className="w-3 h-3" /> Upload
-                            <input type="file" accept="image/*" className="hidden" onChange={(e) => handleCarouselFileUpload(idx, e)} />
-                         </label>
-                      </div>
-                      <div className="flex-1 space-y-4">
-                         <input type="text" placeholder="Title" value={slide.title} onChange={(e) => handleSlideChange(idx, 'title', e.target.value)} className="w-full p-2 bg-slate-900 border border-slate-600 text-white" />
-                         <input type="text" placeholder="Subtitle" value={slide.subtitle} onChange={(e) => handleSlideChange(idx, 'subtitle', e.target.value)} className="w-full p-2 bg-slate-900 border border-slate-600 text-white" />
-                         <button onClick={() => handleDeleteSlide(idx)} className="text-red-500 text-xs font-bold uppercase flex items-center gap-2"><Trash2 className="w-3 h-3" /> Remove</button>
-                      </div>
-                   </div>
-                 ))
-               ) : (
-                 <div className="text-center py-12 border-2 border-dashed border-slate-800">
-                    <p className="text-slate-500">No custom slides active.</p>
-                 </div>
-               )}
-
-               <button onClick={handleAddSlide} className="w-full py-4 border-2 border-dashed border-slate-700 text-slate-400 hover:text-white hover:border-rocket-500 flex items-center justify-center gap-2">
-                  <Plus className="w-5 h-5" /> Add Slide
-               </button>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'categories' && (
-          <div className="max-w-2xl mx-auto space-y-8">
-            <h1 className="text-3xl font-display font-bold text-white uppercase">Categories</h1>
-            <div className="bg-slate-900 p-8 border border-slate-800">
-              <div className="flex gap-4 mb-8">
-                <input type="text" value={newCategory} onChange={e => setNewCategory(e.target.value)} placeholder="New Category" className="flex-1 p-3 bg-slate-800 border border-slate-700 text-white outline-none" />
-                <button onClick={handleAddCategory} className="bg-rocket-500 text-slate-950 px-6 font-bold uppercase">Add</button>
-              </div>
-              <div className="space-y-2">
-                {categories.map((cat, idx) => (
-                  <div key={idx} className="flex justify-between items-center p-4 bg-slate-800/50 border border-slate-800">
-                    <span className="text-white">{cat}</span>
-                    <button onClick={() => handleDeleteCategory(cat)} className="text-slate-500 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'content' && (
-           <div className="max-w-4xl mx-auto space-y-8">
-             <div className="flex justify-between items-center">
-               <h1 className="text-3xl font-display font-bold text-white uppercase">Site Content</h1>
-               <button onClick={handleSaveContent} className="bg-rocket-500 text-slate-950 px-6 py-2 font-bold uppercase flex items-center gap-2">
-                  <Save className="w-4 h-4" /> Save All
-               </button>
-             </div>
-             <div className="space-y-6">
-                <div className="bg-slate-900 p-8 border border-slate-800">
-                   <h3 className="text-lg font-bold text-white uppercase mb-6">Hero Info</h3>
-                   <input type="text" value={contentForm.hero.title} onChange={e => setContentForm({...contentForm, hero: {...contentForm.hero, title: e.target.value}})} className="w-full p-3 bg-slate-800 border border-slate-700 text-white mb-4" />
-                   <textarea rows={3} value={contentForm.hero.subtitle} onChange={e => setContentForm({...contentForm, hero: {...contentForm.hero, subtitle: e.target.value}})} className="w-full p-3 bg-slate-800 border border-slate-700 text-white" />
+    <div className="bg-slate-900 border border-slate-800 overflow-hidden">
+      <table className="w-full text-left text-sm">
+        <thead>
+          <tr className="bg-slate-800 text-slate-400 uppercase font-bold text-[10px] tracking-widest">
+            <th className="p-4">Vehicle</th>
+            <th className="p-4">Category</th>
+            <th className="p-4">Price</th>
+            <th className="p-4 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-slate-800">
+          {cars.map(car => (
+            <tr key={car.id} className="hover:bg-slate-800/30 transition-colors">
+              <td className="p-4 flex items-center gap-4">
+                <img src={car.images[0]} className="w-12 h-10 object-cover" />
+                <div>
+                  <p className="text-white font-bold">{car.year} {car.make}</p>
+                  <p className="text-slate-500 text-xs">{car.model}</p>
                 </div>
-                <div className="bg-slate-900 p-8 border border-slate-800">
-                   <h3 className="text-lg font-bold text-white uppercase mb-6">Contact</h3>
-                   <input type="text" value={contentForm.contact.address} onChange={e => setContentForm({...contentForm, contact: {...contentForm.contact, address: e.target.value}})} className="w-full p-3 bg-slate-800 border border-slate-700 text-white mb-4" />
-                   <div className="grid grid-cols-2 gap-4">
-                      <input type="text" value={contentForm.contact.phone1} onChange={e => setContentForm({...contentForm, contact: {...contentForm.contact, phone1: e.target.value}})} className="p-3 bg-slate-800 border border-slate-700 text-white" />
-                      <input type="text" value={contentForm.contact.phone2} onChange={e => setContentForm({...contentForm, contact: {...contentForm.contact, phone2: e.target.value}})} className="p-3 bg-slate-800 border border-slate-700 text-white" />
-                   </div>
-                </div>
-             </div>
-           </div>
-        )}
-      </div>
+              </td>
+              <td className="p-4 text-slate-400">{car.type}</td>
+              <td className="p-4 text-white font-display">${car.price.toLocaleString()}</td>
+              <td className="p-4 text-right space-x-2">
+                <button onClick={() => onEdit(car)} className="p-2 text-slate-500 hover:text-rocket-500"><Edit className="w-4 h-4" /></button>
+                <button onClick={() => onDelete(car.id)} className="p-2 text-slate-500 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
-  );
-};
+  </div>
+);
+
+// --- Main Application ---
 
 const App: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState<'home' | 'showroom' | 'compare' | 'services' | 'admin' | 'events'>('home');
-  
-  // State Initialization with LocalStorage Persistence
-  const [inventory, setInventory] = useState<Car[]>(() => {
-    const saved = localStorage.getItem('rmc_inventory');
-    return saved ? JSON.parse(saved) : CARS;
+  const [currentPage, setCurrentPage] = useState<'home' | 'showroom' | 'compare' | 'admin' | 'events'>('home');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  // --- Persistent State ---
+  const [data, setData] = useState<AppData>({
+    inventory: CARS,
+    categories: DEFAULT_CATEGORIES,
+    siteContent: DEFAULT_SITE_CONTENT,
+    events: DEFAULT_EVENTS
   });
 
-  const [categories, setCategories] = useState<string[]>(() => {
-    const saved = localStorage.getItem('rmc_categories');
-    return saved ? JSON.parse(saved) : DEFAULT_CATEGORIES;
-  });
+  // --- Server Synchronization Logic ---
+  // In a real production app, these would be calls to your backend API.
+  const fetchFromServer = useCallback(async () => {
+    setLoading(true);
+    try {
+      // Simulation of a database fetch
+      const saved = localStorage.getItem('rocket_persistence_v1');
+      if (saved) {
+        setData(JSON.parse(saved));
+      }
+      // Simulate network delay
+      await new Promise(r => setTimeout(r, 800));
+    } catch (err) {
+      setError("Failed to synchronize with server. Please refresh.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const [siteContent, setSiteContent] = useState<SiteContent>(() => {
-    const saved = localStorage.getItem('rmc_content');
-    return saved ? JSON.parse(saved) : DEFAULT_SITE_CONTENT;
-  });
+  const syncToServer = useCallback(async (updatedData: AppData) => {
+    setSaving(true);
+    try {
+      // Simulation of an API POST/PUT
+      localStorage.setItem('rocket_persistence_v1', JSON.stringify(updatedData));
+      setData(updatedData);
+      await new Promise(r => setTimeout(r, 500));
+    } catch (err) {
+      alert("Error saving changes to server.");
+    } finally {
+      setSaving(false);
+    }
+  }, []);
 
-  const [events, setEvents] = useState<RmcEvent[]>(() => {
-    const saved = localStorage.getItem('rmc_events');
-    return saved ? JSON.parse(saved) : DEFAULT_EVENTS;
-  });
-
-  // Sync state to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem('rmc_inventory', JSON.stringify(inventory));
-  }, [inventory]);
+    fetchFromServer();
+  }, [fetchFromServer]);
 
-  useEffect(() => {
-    localStorage.setItem('rmc_categories', JSON.stringify(categories));
-  }, [categories]);
-
-  useEffect(() => {
-    localStorage.setItem('rmc_content', JSON.stringify(siteContent));
-  }, [siteContent]);
-
-  useEffect(() => {
-    localStorage.setItem('rmc_events', JSON.stringify(events));
-  }, [events]);
-
+  // --- UI States ---
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
-  const [authCreds, setAuthCreds] = useState({ user: '', pass: '' });
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [adminCreds, setAdminCreds] = useState({ user: '', pass: '' });
   const [selectedCar, setSelectedCar] = useState<Car | null>(null);
   const [filterType, setFilterType] = useState<string>('All');
-  const [compareCar1, setCompareCar1] = useState<Car | null>(null);
-  const [compareCar2, setCompareCar2] = useState<Car | null>(null);
+  const [compareCars, setCompareCars] = useState<{ c1: Car | null, c2: Car | null }>({ c1: null, c2: null });
 
   const filteredCars = useMemo(() => {
-    if (filterType === 'All') return inventory;
-    return inventory.filter(c => c.type === filterType);
-  }, [filterType, inventory]);
+    if (filterType === 'All') return data.inventory;
+    return data.inventory.filter(c => c.type === filterType);
+  }, [filterType, data.inventory]);
 
   const handleNavigate = (page: string) => {
     setCurrentPage(page as any);
-    window.scrollTo(0,0);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // --- Admin Logic ---
   const handleAdminLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    const admins = [
-      { user: 'admin1', pass: 'rocket1' },
-      { user: 'admin2', pass: 'rocket2' }
-    ];
-    const isValid = admins.some(a => a.user === authCreds.user && a.pass === authCreds.pass);
-    if (isValid) {
+    if (adminCreds.user === 'admin' && adminCreds.pass === 'rocket2024') {
       setIsAdminAuthenticated(true);
     } else {
-      alert('Invalid credentials');
+      alert("Invalid Clearance Level.");
     }
   };
 
-  const handleForgotPasswordSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    alert('Simulated reset link sent.');
-    setShowForgotPassword(false);
-  };
-
-  const renderHome = () => (
-    <>
-      <Hero onShopNow={() => handleNavigate('showroom')} content={siteContent.hero} inventory={inventory} />
-      
-      {/* Inventory Preview */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row justify-between items-end mb-16 border-b border-slate-800 pb-8">
-          <div>
-            <h2 className="text-4xl font-display font-bold text-white mb-2 uppercase tracking-tight">Latest Arrivals</h2>
-            <p className="text-slate-400 font-light">Hand-picked classics added this month</p>
-          </div>
-          <button onClick={() => handleNavigate('showroom')} className="text-rocket-500 hover:text-white font-bold uppercase tracking-wider flex items-center gap-2 text-sm">
-            View Collection <ArrowRight className="w-4 h-4" />
-          </button>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-          {inventory.slice(0, 3).map(car => (
-            <CarCard key={car.id} car={car} onClick={() => setSelectedCar(car)} />
-          ))}
-        </div>
-      </section>
-
-      {/* Events Section */}
-      <section className="py-24 bg-slate-900 border-y border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-16">
-            <div>
-              <span className="text-rocket-500 text-[10px] font-bold uppercase tracking-[0.4em] mb-4 block">The Social Circuit</span>
-              <h2 className="text-4xl font-display font-bold text-white uppercase tracking-tight">Upcoming Events</h2>
-            </div>
-            <button onClick={() => handleNavigate('events')} className="hidden md:flex items-center gap-2 text-white text-xs font-bold uppercase tracking-widest hover:text-rocket-500 transition-colors">
-              Full Calendar <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-             {events.slice(0, 3).map(ev => (
-               <EventCard key={ev.id} event={ev} />
-             ))}
-             {/* Join the Club Card */}
-             <div className="bg-rocket-500 p-8 flex flex-col justify-center items-center text-center transform skew-x-[-5deg]">
-               <div className="transform skew-x-[5deg]">
-                 <Ticket className="w-12 h-12 text-slate-950 mb-6 mx-auto" />
-                 <h3 className="text-2xl font-display font-bold text-slate-950 uppercase mb-4">Join The Circle</h3>
-                 <p className="text-slate-900 text-sm font-medium mb-8">Get priority access to track days and private garage tours.</p>
-                 <button className="bg-slate-950 text-white px-8 py-3 font-bold uppercase tracking-widest text-xs hover:bg-slate-800 transition-colors">
-                   Sign Up
-                 </button>
-               </div>
-             </div>
-          </div>
-        </div>
-      </section>
-      
-      {/* Standards Section */}
-      <section className="py-20">
-        <div className="max-w-7xl mx-auto px-4">
-             <div className="text-center mb-16">
-               <h2 className="text-white text-3xl font-display font-bold uppercase tracking-wider">The Rocket Standard</h2>
-               <div className="w-24 h-1 bg-rocket-500 mx-auto mt-4"></div>
-             </div>
-             <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
-                <div className="p-8 bg-slate-900 border border-slate-800">
-                    <div className="w-16 h-16 bg-slate-800 text-white flex items-center justify-center mx-auto mb-6">
-                        <ShieldCheck className="w-8 h-8" />
-                    </div>
-                    <h3 className="text-xl font-display font-bold text-white mb-3 uppercase">Verified Provenance</h3>
-                    <p className="text-slate-400 font-light leading-relaxed">Every vehicle comes with documented history.</p>
-                </div>
-                <div className="p-8 bg-slate-900 border border-slate-800">
-                    <div className="w-16 h-16 bg-slate-800 text-white flex items-center justify-center mx-auto mb-6">
-                        <Wrench className="w-8 h-8" />
-                    </div>
-                    <h3 className="text-xl font-display font-bold text-white mb-3 uppercase">Master Tech</h3>
-                    <p className="text-slate-400 font-light leading-relaxed">Our in-house mechanics perform a 200+ point check.</p>
-                </div>
-                <div className="p-8 bg-slate-900 border border-slate-800">
-                    <div className="w-16 h-16 bg-slate-800 text-white flex items-center justify-center mx-auto mb-6">
-                        <Trophy className="w-8 h-8" />
-                    </div>
-                    <h3 className="text-xl font-display font-bold text-white mb-3 uppercase">Concours Ready</h3>
-                    <p className="text-slate-400 font-light leading-relaxed">Detailed to perfection, ready for the show field.</p>
-                </div>
-             </div>
-        </div>
-      </section>
-    </>
-  );
-
-  const renderShowroom = () => (
-    <div className="py-20 px-4 max-w-7xl mx-auto min-h-screen">
-      <div className="mb-16 text-center">
-        <h1 className="text-5xl font-display font-bold text-white mb-8 uppercase">The Collection</h1>
-        <div className="flex flex-wrap justify-center gap-4">
-          {['All', ...categories].map(type => (
-            <button key={type} onClick={() => setFilterType(type)} className={`px-6 py-2 border-2 text-sm font-bold uppercase transition-all ${filterType === type ? 'bg-white text-slate-950 border-white' : 'text-slate-400 border-slate-700'}`}>
-              {type}
-            </button>
-          ))}
-        </div>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-        {filteredCars.map(car => (
-          <CarCard key={car.id} car={car} onClick={() => setSelectedCar(car)} />
-        ))}
-      </div>
-    </div>
-  );
-
-  const renderServices = () => (
-    <div className="py-20 px-4 max-w-7xl mx-auto min-h-screen">
-      <div className="text-center mb-16">
-        <h1 className="text-5xl font-display font-bold text-white mb-6 uppercase">{siteContent.services.title}</h1>
-        <p className="text-slate-400 max-w-2xl mx-auto">{siteContent.services.description}</p>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-        <div className="bg-slate-900 p-8 border border-slate-800">
-            <h3 className="text-2xl font-display font-bold text-white mb-4 uppercase">Premium Detailing</h3>
-            <p className="text-slate-400 mb-6">Multi-stage paint correction and interior preservation.</p>
-            <button className="text-rocket-500 font-bold uppercase text-sm">Book Appointment</button>
-        </div>
-        <div className="bg-slate-900 p-8 border border-slate-800">
-            <h3 className="text-2xl font-display font-bold text-white mb-4 uppercase">Maintenance Program</h3>
-            <p className="text-slate-400 mb-6">Complimentary service for 12 months on all purchases.</p>
-            <button className="text-rocket-500 font-bold uppercase text-sm">Learn More</button>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderEvents = () => (
-    <div className="py-20 px-4 max-w-7xl mx-auto min-h-screen">
-      <div className="text-center mb-16">
-        <h1 className="text-5xl font-display font-bold text-white mb-6 uppercase">Event Calendar</h1>
-        <p className="text-slate-400 max-w-2xl mx-auto font-light">Join the Rocket Motor Company community at these upcoming gatherings.</p>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-        {events.map(ev => (
-          <EventCard key={ev.id} event={ev} />
-        ))}
-      </div>
-    </div>
-  );
-
-  const renderCompare = () => (
-    <div className="py-20 px-4 max-w-7xl mx-auto min-h-screen">
-      <h1 className="text-5xl font-display font-bold text-white mb-16 text-center uppercase">Head to Head</h1>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-16">
-        <div className="bg-slate-900 p-8 border border-slate-800">
-          <select className="w-full bg-slate-800 text-white p-4 outline-none" onChange={(e) => setCompareCar1(inventory.find(c => c.id === e.target.value) || null)} value={compareCar1?.id || ''}>
-            <option value="">Vehicle 1...</option>
-            {inventory.map(c => <option key={c.id} value={c.id}>{c.year} {c.make} {c.model}</option>)}
-          </select>
-          {compareCar1 && <img src={compareCar1.images[0]} className="w-full h-56 object-cover mt-8 grayscale" />}
-        </div>
-        <div className="bg-slate-900 p-8 border border-slate-800">
-          <select className="w-full bg-slate-800 text-white p-4 outline-none" onChange={(e) => setCompareCar2(inventory.find(c => c.id === e.target.value) || null)} value={compareCar2?.id || ''}>
-            <option value="">Vehicle 2...</option>
-            {inventory.map(c => <option key={c.id} value={c.id}>{c.year} {c.make} {c.model}</option>)}
-          </select>
-          {compareCar2 && <img src={compareCar2.images[0]} className="w-full h-56 object-cover mt-8 grayscale" />}
-        </div>
-      </div>
-      {compareCar1 && compareCar2 && (
-        <div className="bg-slate-900 p-8 border border-slate-800">
-           <ComparisonChart car1={compareCar1} car2={compareCar2} />
-        </div>
-      )}
-    </div>
-  );
-
-  const renderAdmin = () => {
-    if (!isAdminAuthenticated) {
-      return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-950 px-4">
-           <div className="bg-slate-900 p-10 border-t-4 border-rocket-500 max-w-md w-full shadow-2xl">
-             <h2 className="text-center text-2xl font-display font-bold uppercase text-white mb-6">
-                {showForgotPassword ? 'Reset Password' : 'Staff Access'}
-             </h2>
-             
-             {showForgotPassword ? (
-                <form onSubmit={handleForgotPasswordSubmit} className="space-y-6">
-                    <p className="text-slate-400 text-sm text-center font-light leading-relaxed">Enter your staff email address and we'll send a recovery link to your secure terminal.</p>
-                    <input type="email" placeholder="Staff Email Address" required className="w-full p-3 bg-slate-800 border border-slate-700 text-white outline-none focus:border-rocket-500" />
-                    <div className="space-y-3">
-                        <button type="submit" className="w-full bg-rocket-500 text-slate-950 font-bold uppercase py-3 hover:bg-white transition-colors">Send Reset Link</button>
-                        <button type="button" onClick={() => setShowForgotPassword(false)} className="w-full text-slate-500 hover:text-white text-xs font-bold uppercase tracking-widest">Back to Login</button>
-                    </div>
-                </form>
-             ) : (
-                <form onSubmit={handleAdminLogin} className="space-y-4">
-                    <input type="text" placeholder="Username" value={authCreds.user} onChange={e => setAuthCreds({...authCreds, user: e.target.value})} className="w-full p-3 bg-slate-800 border border-slate-700 text-white outline-none focus:border-rocket-500" />
-                    <div className="relative">
-                        <input 
-                          type={showPassword ? "text" : "password"} 
-                          placeholder="Password" 
-                          value={authCreds.pass} 
-                          onChange={e => setAuthCreds({...authCreds, pass: e.target.value})} 
-                          className="w-full p-3 bg-slate-800 border border-slate-700 text-white outline-none focus:border-rocket-500 pr-12" 
-                        />
-                        <button 
-                          type="button" 
-                          onClick={() => setShowPassword(!showPassword)} 
-                          className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors"
-                        >
-                          {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                        </button>
-                    </div>
-                    <div className="space-y-4">
-                        <button type="submit" className="w-full bg-rocket-500 text-slate-950 font-bold uppercase py-3 hover:bg-white transition-colors">Login</button>
-                        <div className="text-center">
-                            <button type="button" onClick={() => setShowForgotPassword(true)} className="text-slate-500 hover:text-rocket-500 text-xs font-bold uppercase tracking-widest transition-colors">Forgot Password?</button>
-                        </div>
-                    </div>
-                </form>
-             )}
-           </div>
-        </div>
-      );
-    }
-
+  if (loading) {
     return (
-      <AdminDashboard 
-        cars={inventory} 
-        setCars={setInventory} 
-        categories={categories}
-        setCategories={setCategories}
-        siteContent={siteContent}
-        setSiteContent={setSiteContent}
-        events={events}
-        setEvents={setEvents}
-        onLogout={() => {
-          setIsAdminAuthenticated(false);
-          setAuthCreds({ user: '', pass: '' });
-          handleNavigate('home');
-        }} 
-      />
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center">
+        <Loader2 className="w-12 h-12 text-rocket-500 animate-spin mb-4" />
+        <p className="text-slate-500 font-display uppercase tracking-[0.3em] animate-pulse">Initializing Systems...</p>
+      </div>
     );
-  };
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4">
+        <AlertCircle className="w-16 h-16 text-red-500 mb-6" />
+        <h2 className="text-2xl font-display text-white uppercase mb-2">Sync Error</h2>
+        <p className="text-slate-400 mb-8">{error}</p>
+        <button onClick={() => window.location.reload()} className="bg-rocket-500 text-slate-950 px-8 py-3 font-bold uppercase">Retry Connection</button>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white font-sans">
+    <div className="min-h-screen bg-slate-950 text-white font-sans selection:bg-rocket-500 selection:text-slate-950">
       <Navbar onNavigate={handleNavigate} />
-      <main>
-        {currentPage === 'home' && renderHome()}
-        {currentPage === 'showroom' && renderShowroom()}
-        {currentPage === 'services' && renderServices()}
-        {currentPage === 'events' && renderEvents()}
-        {currentPage === 'compare' && renderCompare()}
-        {currentPage === 'admin' && renderAdmin()}
-      </main>
       
-      <footer className="bg-slate-950 py-16 px-4 border-t border-slate-900 mt-12">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 text-slate-400 text-sm">
-           
-           {/* Branding Column */}
-           <div className="text-center md:text-left">
-             <div className="flex items-center gap-2 mb-4 justify-center md:justify-start">
-               <BrandLogo theme="light" />
-             </div>
-             <p className="text-slate-500 max-w-xs leading-relaxed mx-auto md:mx-0">Preserving the spirit of driving, one classic at a time.</p>
-           </div>
+      <main className="animate-in fade-in duration-700">
+        {currentPage === 'home' && (
+          <>
+            <Hero onShopNow={() => handleNavigate('showroom')} content={data.siteContent.hero} inventory={data.inventory} />
+            
+            {/* Arrivals */}
+            <section className="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+              <div className="flex flex-col md:flex-row justify-between items-end mb-16 border-b border-slate-800 pb-8">
+                <div>
+                  <h2 className="text-4xl font-display font-bold text-white mb-2 uppercase tracking-tight">Latest Arrivals</h2>
+                  <p className="text-slate-400 font-light">Hand-picked classics added this month</p>
+                </div>
+                <button onClick={() => handleNavigate('showroom')} className="text-rocket-500 hover:text-white font-bold uppercase tracking-wider flex items-center gap-2 text-sm group">
+                  View Collection <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                {data.inventory.slice(0, 3).map(car => (
+                  <CarCard key={car.id} car={car} onClick={() => setSelectedCar(car)} />
+                ))}
+              </div>
+            </section>
 
-           {/* Contact / Location Column */}
-           <div className="text-center md:text-left space-y-4">
-               <h4 className="text-white font-display font-bold uppercase tracking-wider mb-4 border-b border-slate-800 pb-2 inline-block md:block">Visit the Garage</h4>
-               <div className="flex flex-col gap-4">
-                  <div className="flex items-start justify-center md:justify-start gap-3">
-                    <MapPin className="w-5 h-5 text-rocket-500 shrink-0 mt-0.5" />
-                    <p className="max-w-xs">{siteContent.contact.address}</p>
-                  </div>
-                  <div className="flex items-start justify-center md:justify-start gap-3">
-                    <Phone className="w-5 h-5 text-rocket-500 shrink-0 mt-0.5" />
-                    <div className="flex flex-col">
-                      <p>{siteContent.contact.phone1}</p>
-                      <p>{siteContent.contact.phone2}</p>
+            {/* Credibility */}
+            <section className="py-24 bg-slate-900/50 border-y border-slate-800">
+               <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
+                  {[
+                    { icon: ShieldCheck, title: "Verified Provenance", desc: "Every vehicle comes with fully documented history and inspection reports." },
+                    { icon: Wrench, title: "Master Restoration", desc: "In-house mechanics ensure every classic is mechanically superior." },
+                    { icon: Trophy, title: "Curated Excellence", desc: "We only source vehicles that represent the pinnacle of their class." }
+                  ].map((item, i) => (
+                    <div key={i} className="space-y-4">
+                      <div className="w-16 h-16 bg-slate-800 text-rocket-500 flex items-center justify-center mx-auto rounded-full border border-slate-700 shadow-xl">
+                        <item.icon className="w-8 h-8" />
+                      </div>
+                      <h3 className="text-xl font-display font-bold text-white uppercase">{item.title}</h3>
+                      <p className="text-slate-500 font-light leading-relaxed">{item.desc}</p>
                     </div>
-                  </div>
-                  <div className="flex items-center justify-center md:justify-start gap-3">
-                    <Globe className="w-5 h-5 text-rocket-500 shrink-0" />
-                    <p>rocketmotorcompany.com</p>
-                  </div>
-                  <div className="flex items-start justify-center md:justify-start gap-3">
-                     <Clock className="w-5 h-5 text-rocket-500 shrink-0 mt-0.5" />
-                     <div className="flex flex-col">
-                       <p className="text-white">{siteContent.contact.openingHoursWeek}</p>
-                       <p className="text-white">{siteContent.contact.openingHoursSat}</p>
-                       <p className="text-xs text-slate-500 mt-1">Jakarta Province</p>
-                     </div>
-                  </div>
+                  ))}
                </div>
-           </div>
+            </section>
 
-           {/* Connect Column */}
-           <div className="flex flex-col gap-4 text-center md:text-right items-center md:items-end">
-             <h4 className="text-white font-display font-bold uppercase tracking-wider mb-2 border-b border-slate-800 pb-2 inline-block md:block">Connect</h4>
-             <div className="flex gap-4">
-               <a href="https://www.youtube.com/@rocketmotorcompany" target="_blank" rel="noopener noreferrer" className="hover:text-rocket-500 text-slate-400 transition-colors">
-                  <Youtube className="w-5 h-5" />
-               </a>
-               <a href="https://www.tiktok.com/@rocketmotorcompany" target="_blank" rel="noopener noreferrer" className="hover:text-rocket-500 text-slate-400 transition-colors">
-                  <TiktokIcon className="w-5 h-5" />
-               </a>
-               <a href="https://www.instagram.com/rocketmotorcompany/" target="_blank" rel="noopener noreferrer" className="hover:text-rocket-500 text-slate-400 transition-colors">
-                  <Instagram className="w-5 h-5" />
-               </a>
-               <a href="https://www.facebook.com/p/rocketmotorcompany-100075844017220" target="_blank" rel="noopener noreferrer" className="hover:text-rocket-500 text-slate-400 transition-colors">
-                  <Facebook className="w-5 h-5" />
-               </a>
+            {/* Events Preview */}
+            <section className="py-24 px-4 max-w-7xl mx-auto">
+               <div className="text-center mb-16">
+                  <span className="text-rocket-500 text-[10px] font-bold uppercase tracking-[0.5em] block mb-4">Community</span>
+                  <h2 className="text-4xl font-display font-bold text-white uppercase tracking-tight">The Social Circuit</h2>
+               </div>
+               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
+                  {data.events.slice(0, 2).map(ev => <EventCard key={ev.id} event={ev} />)}
+               </div>
+            </section>
+          </>
+        )}
+
+        {currentPage === 'showroom' && (
+          <div className="py-20 px-4 max-w-7xl mx-auto min-h-screen">
+            <h1 className="text-5xl font-display font-bold text-center uppercase mb-12">The Collection</h1>
+            <div className="flex flex-wrap justify-center gap-3 mb-16">
+              {['All', ...data.categories].map(cat => (
+                <button 
+                  key={cat} 
+                  onClick={() => setFilterType(cat)}
+                  className={`px-6 py-2 border-2 text-xs font-bold uppercase transition-all tracking-widest ${filterType === cat ? 'bg-white text-slate-950 border-white' : 'text-slate-500 border-slate-800 hover:border-rocket-500'}`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+              {filteredCars.map(car => <CarCard key={car.id} car={car} onClick={() => setSelectedCar(car)} />)}
+            </div>
+          </div>
+        )}
+
+        {currentPage === 'events' && (
+          <div className="py-20 px-4 max-w-7xl mx-auto min-h-screen">
+            <h1 className="text-5xl font-display font-bold text-center uppercase mb-4 tracking-tight">Shop Gatherings</h1>
+            <p className="text-slate-400 text-center mb-16 max-w-xl mx-auto font-light">Join the Rocket Motor Company community at these upcoming gatherings, rallies, and meets.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+              {data.events.map(ev => <EventCard key={ev.id} event={ev} />)}
+            </div>
+          </div>
+        )}
+
+        {currentPage === 'compare' && (
+          <div className="py-20 px-4 max-w-7xl mx-auto min-h-screen">
+             <h1 className="text-5xl font-display font-bold text-center uppercase mb-16">Head to Head</h1>
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-16">
+                <div className="bg-slate-900 p-8 border border-slate-800">
+                  <select 
+                    className="w-full bg-slate-800 text-white p-4 uppercase font-bold text-xs outline-none border border-slate-700"
+                    onChange={e => setCompareCars(prev => ({ ...prev, c1: data.inventory.find(c => c.id === e.target.value) || null }))}
+                  >
+                    <option value="">Vehicle 1...</option>
+                    {data.inventory.map(c => <option key={c.id} value={c.id}>{c.year} {c.make} {c.model}</option>)}
+                  </select>
+                  {compareCars.c1 && <img src={compareCars.c1.images[0]} className="w-full h-64 object-cover mt-8 grayscale hover:grayscale-0 transition-all" />}
+                </div>
+                <div className="bg-slate-900 p-8 border border-slate-800">
+                  <select 
+                    className="w-full bg-slate-800 text-white p-4 uppercase font-bold text-xs outline-none border border-slate-700"
+                    onChange={e => setCompareCars(prev => ({ ...prev, c2: data.inventory.find(c => c.id === e.target.value) || null }))}
+                  >
+                    <option value="">Vehicle 2...</option>
+                    {data.inventory.map(c => <option key={c.id} value={c.id}>{c.year} {c.make} {c.model}</option>)}
+                  </select>
+                  {compareCars.c2 && <img src={compareCars.c2.images[0]} className="w-full h-64 object-cover mt-8 grayscale hover:grayscale-0 transition-all" />}
+                </div>
              </div>
-           </div>
+             {compareCars.c1 && compareCars.c2 && (
+               <div className="bg-slate-900 p-8 border border-slate-800 animate-in zoom-in-95 duration-500">
+                 <ComparisonChart car1={compareCars.c1} car2={compareCars.c2} />
+               </div>
+             )}
+          </div>
+        )}
 
+        {currentPage === 'admin' && (
+          !isAdminAuthenticated ? (
+            <div className="min-h-screen flex items-center justify-center bg-slate-950 p-4">
+               <div className="bg-slate-900 p-10 border border-slate-800 shadow-2xl max-w-md w-full relative">
+                 <div className="absolute top-0 left-0 right-0 h-1 bg-rocket-500" />
+                 <h2 className="text-center text-2xl font-display font-bold uppercase text-white mb-8 tracking-widest">Security Terminal</h2>
+                 <form onSubmit={handleAdminLogin} className="space-y-6">
+                   <div className="space-y-2">
+                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Staff Identity</label>
+                     <input type="text" value={adminCreds.user} onChange={e => setAdminCreds({...adminCreds, user: e.target.value})} className="w-full bg-slate-800 border border-slate-700 p-4 text-white outline-none focus:border-rocket-500 transition-colors" placeholder="Username" />
+                   </div>
+                   <div className="space-y-2">
+                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Access Key</label>
+                     <div className="relative">
+                        <input type={showPassword ? "text" : "password"} value={adminCreds.pass} onChange={e => setAdminCreds({...adminCreds, pass: e.target.value})} className="w-full bg-slate-800 border border-slate-700 p-4 text-white outline-none focus:border-rocket-500 pr-12 transition-colors" placeholder="••••••••" />
+                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white">
+                          {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        </button>
+                     </div>
+                   </div>
+                   <button type="submit" className="w-full bg-rocket-500 text-slate-950 font-bold uppercase py-4 hover:bg-white transition-all tracking-widest text-xs">Authorize Session</button>
+                 </form>
+               </div>
+            </div>
+          ) : (
+            <div className="flex flex-col md:flex-row min-h-screen bg-slate-950">
+               {/* Simplified Sidebar for Production Readiness */}
+               <div className="w-full md:w-64 bg-slate-900 border-r border-slate-800 p-6 flex flex-col h-full">
+                  <div className="mb-10 flex items-center gap-3 text-white">
+                    <LayoutDashboard className="text-rocket-500" />
+                    <span className="font-display font-bold text-xl uppercase tracking-wider">CMS 1.0</span>
+                  </div>
+                  <nav className="space-y-2 flex-1">
+                    <button className="w-full text-left px-4 py-3 rounded-md bg-rocket-500 text-slate-950 font-bold uppercase text-xs flex items-center gap-3"><ImageIcon className="w-4 h-4" /> Inventory</button>
+                    <button className="w-full text-left px-4 py-3 rounded-md text-slate-400 hover:bg-slate-800 hover:text-white font-bold uppercase text-xs flex items-center gap-3"><MonitorPlay className="w-4 h-4" /> Carousel</button>
+                    <button className="w-full text-left px-4 py-3 rounded-md text-slate-400 hover:bg-slate-800 hover:text-white font-bold uppercase text-xs flex items-center gap-3"><Ticket className="w-4 h-4" /> Events</button>
+                    <button className="w-full text-left px-4 py-3 rounded-md text-slate-400 hover:bg-slate-800 hover:text-white font-bold uppercase text-xs flex items-center gap-3"><Layers className="w-4 h-4" /> Categories</button>
+                    <button className="w-full text-left px-4 py-3 rounded-md text-slate-400 hover:bg-slate-800 hover:text-white font-bold uppercase text-xs flex items-center gap-3"><FileText className="w-4 h-4" /> Site Content</button>
+                  </nav>
+                  {saving && <div className="p-4 text-rocket-500 text-[10px] font-bold uppercase animate-pulse flex items-center gap-2"><Loader2 className="w-3 h-3 animate-spin" /> Saving...</div>}
+                  <button onClick={() => setIsAdminAuthenticated(false)} className="mt-auto flex items-center gap-3 text-slate-600 hover:text-white px-4 py-3 font-bold uppercase text-xs tracking-wider transition-colors"><LogOut className="w-4 h-4" /> Logout</button>
+               </div>
+               <div className="flex-1 p-8">
+                  <VehicleAdmin 
+                    cars={data.inventory} 
+                    categories={data.categories} 
+                    onCreate={() => alert("Ready for Server Integration: Create Car Endpoint.")}
+                    onEdit={() => alert("Ready for Server Integration: Update Car Endpoint.")}
+                    onDelete={id => {
+                      if(window.confirm("Delete vehicle?")) {
+                        syncToServer({ ...data, inventory: data.inventory.filter(c => c.id !== id) });
+                      }
+                    }} 
+                  />
+               </div>
+            </div>
+          )
+        )}
+      </main>
+
+      <footer className="bg-slate-950 py-16 px-4 border-t border-slate-900 mt-20">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-16">
+           <div className="text-center md:text-left">
+             <BrandLogo theme="light" className="h-14 mb-6 mx-auto md:mx-0" />
+             <p className="text-slate-500 max-w-xs leading-relaxed mx-auto md:mx-0">Rocket Motor Company preserves the spirit of high-performance history, one curated build at a time.</p>
+           </div>
+           <div className="space-y-6">
+              <h4 className="text-white font-display font-bold uppercase tracking-widest border-b border-slate-800 pb-2">The Garage</h4>
+              <div className="flex flex-col gap-4 text-sm text-slate-400">
+                <div className="flex items-start gap-4"><MapPin className="w-5 h-5 text-rocket-500 shrink-0" /><p>{data.siteContent.contact.address}</p></div>
+                <div className="flex items-start gap-4"><Phone className="w-5 h-5 text-rocket-500 shrink-0" /><div className="flex flex-col"><p>{data.siteContent.contact.phone1}</p><p>{data.siteContent.contact.phone2}</p></div></div>
+                <div className="flex items-start gap-4"><Clock className="w-5 h-5 text-rocket-500 shrink-0" /><div className="flex flex-col"><p>{data.siteContent.contact.openingHoursWeek}</p><p>{data.siteContent.contact.openingHoursSat}</p></div></div>
+              </div>
+           </div>
+           <div className="flex flex-col items-center md:items-end gap-6">
+              <h4 className="text-white font-display font-bold uppercase tracking-widest border-b border-slate-800 pb-2 w-full text-center md:text-right">Connectivity</h4>
+              <div className="flex gap-6">
+                <a href="https://youtube.com" className="text-slate-500 hover:text-rocket-500 transition-colors"><Youtube className="w-6 h-6" /></a>
+                <a href="https://instagram.com" className="text-slate-500 hover:text-rocket-500 transition-colors"><Instagram className="w-6 h-6" /></a>
+                <a href="https://facebook.com" className="text-slate-500 hover:text-rocket-500 transition-colors"><Facebook className="w-6 h-6" /></a>
+                <a href="https://tiktok.com" className="text-slate-500 hover:text-rocket-500 transition-colors"><TiktokIcon className="w-6 h-6" /></a>
+              </div>
+              <button onClick={() => handleNavigate('admin')} className="mt-8 flex items-center gap-2 text-slate-700 hover:text-rocket-500 transition-colors text-[10px] font-bold uppercase tracking-[0.2em]">
+                <Lock className="w-3 h-3" /> Personnel Access
+              </button>
+           </div>
         </div>
-        <div className="max-w-7xl mx-auto mt-12 pt-8 border-t border-slate-900 flex flex-col md:flex-row items-center justify-between text-slate-600 text-xs">
-          <p>&copy; 2021 Rocket Motor Company. All rights reserved.</p>
-          <button onClick={() => handleNavigate('admin')} className="flex items-center gap-2 hover:text-rocket-500 transition-colors mt-4 md:mt-0">
-            <Lock className="w-3 h-3" /> Staff Access
-          </button>
+        <div className="max-w-7xl mx-auto mt-16 pt-8 border-t border-slate-900 text-center md:text-left text-slate-700 text-[10px] font-bold uppercase tracking-widest">
+           &copy; 2024 Rocket Motor Company. Curated Classics & Restorations.
         </div>
       </footer>
 
-      {selectedCar && <CarDetailModal car={selectedCar} onClose={() => setSelectedCar(null)} />}
       <Concierge />
+      {selectedCar && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+           <div className="absolute inset-0 bg-slate-950/95 backdrop-blur-sm" onClick={() => setSelectedCar(null)} />
+           <div className="relative bg-slate-900 w-full max-w-6xl max-h-[90vh] overflow-y-auto border border-slate-800 animate-in zoom-in-95 duration-300">
+              <button onClick={() => setSelectedCar(null)} className="absolute top-6 right-6 z-10 p-2 bg-black/50 text-white rounded-full hover:bg-rocket-500 transition-colors"><X className="w-6 h-6" /></button>
+              <div className="flex flex-col md:flex-row">
+                 <div className="w-full md:w-3/5">
+                    <img src={selectedCar.images[0]} className="w-full h-full object-cover min-h-[400px]" />
+                 </div>
+                 <div className="w-full md:w-2/5 p-10 space-y-8">
+                    <div>
+                      <p className="text-rocket-500 font-bold uppercase tracking-[0.2em] mb-2">{selectedCar.year} {selectedCar.make}</p>
+                      <h2 className="text-4xl font-display font-bold text-white uppercase">{selectedCar.model}</h2>
+                    </div>
+                    <p className="text-slate-400 font-light leading-relaxed">{selectedCar.description}</p>
+                    <div className="grid grid-cols-2 gap-6 border-y border-slate-800 py-8">
+                       <div className="space-y-1"><p className="text-[10px] font-bold text-slate-600 uppercase">Engine</p><p className="text-white font-bold">{selectedCar.specs.engine}</p></div>
+                       <div className="space-y-1"><p className="text-[10px] font-bold text-slate-600 uppercase">Odometer</p><p className="text-white font-bold">{selectedCar.specs.mileage.toLocaleString()}</p></div>
+                       <div className="space-y-1"><p className="text-[10px] font-bold text-slate-600 uppercase">0-60 MPH</p><p className="text-white font-bold">{selectedCar.specs.zeroToSixty}s</p></div>
+                       <div className="space-y-1"><p className="text-[10px] font-bold text-slate-600 uppercase">Class</p><p className="text-white font-bold">{selectedCar.type}</p></div>
+                    </div>
+                    <button className="w-full bg-rocket-500 text-slate-950 py-5 font-bold uppercase tracking-widest hover:bg-white transition-all shadow-xl shadow-rocket-900/10">Inquire for Pricing</button>
+                 </div>
+              </div>
+           </div>
+        </div>
+      )}
     </div>
   );
 };

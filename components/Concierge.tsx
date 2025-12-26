@@ -21,14 +21,14 @@ const Concierge: React.FC = () => {
 
   useEffect(() => {
     if (isOpen && !chatSessionRef.current) {
-      const session = createChatSession();
-      if (session) {
+      try {
+        const session = createChatSession();
         chatSessionRef.current = session;
-      } else {
+      } catch (error) {
         setMessages(prev => [...prev, {
             id: 'error',
             role: 'model',
-            text: 'System offline (Missing API Key).',
+            text: 'System offline (Initialization failed).',
             timestamp: Date.now()
         }]);
       }
@@ -67,6 +67,7 @@ const Concierge: React.FC = () => {
       }]);
 
       for await (const chunk of result) {
+        // Correct Method: Use .text property on GenerateContentResponse
         const c = chunk as GenerateContentResponse;
         if (c.text) {
           botResponseText += c.text;

@@ -1,17 +1,13 @@
-import { GoogleGenAI, Chat, GenerateContentResponse } from "@google/genai";
 
-const apiKey = process.env.API_KEY || '';
+import { GoogleGenAI, Chat } from "@google/genai";
 
-let ai: GoogleGenAI | null = null;
-if (apiKey) {
-  ai = new GoogleGenAI({ apiKey });
-}
+// Always use const ai = new GoogleGenAI({apiKey: process.env.API_KEY});
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-export const createChatSession = (): Chat | null => {
-  if (!ai) return null;
-  
+export const createChatSession = (): Chat => {
+  // Use ai.chats.create with the correct model and config
   return ai.chats.create({
-    model: 'gemini-2.5-flash',
+    model: 'gemini-3-flash-preview',
     config: {
       systemInstruction: `You are the Head Specialist for Rocket Motor Company, a boutique dealership specializing in vintage 4x4s, classic muscle, and curated sports cars.
       Your tone is passionate, knowledgeable, and slightly gritty but refined—like a mechanic who wears a tailored suit.
