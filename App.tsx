@@ -10,7 +10,7 @@ import {
   Trash2, Edit, Save, Image as ImageIcon, Layers, 
   FileText, Upload, Instagram, Facebook, Youtube, 
   MonitorPlay, Ticket, Eye, EyeOff, ShieldCheck, 
-  Wrench, Trophy, Loader2, AlertCircle
+  Wrench, Trophy, Loader2, AlertCircle, Sparkles, Shield
 } from 'lucide-react';
 
 // --- Types for Data Service ---
@@ -58,7 +58,7 @@ const Navbar = ({ onNavigate }: { onNavigate: (page: string) => void }) => {
             <BrandLogo className="h-12 w-12" theme="light" />
           </div>
           <div className="hidden md:flex space-x-8 items-center">
-            {['home', 'showroom', 'events', 'compare'].map((page) => (
+            {['home', 'showroom', 'service', 'events', 'compare'].map((page) => (
               <button 
                 key={page}
                 onClick={() => onNavigate(page)} 
@@ -81,7 +81,7 @@ const Navbar = ({ onNavigate }: { onNavigate: (page: string) => void }) => {
       {mobileMenuOpen && (
         <div className="md:hidden bg-slate-900 border-t border-slate-800 animate-in slide-in-from-top duration-300">
           <div className="px-4 pt-2 pb-4 space-y-1">
-             {['home', 'showroom', 'events', 'compare'].map(page => (
+             {['home', 'showroom', 'service', 'events', 'compare'].map(page => (
                <button 
                 key={page}
                 onClick={() => { onNavigate(page); setMobileMenuOpen(false); }} 
@@ -226,7 +226,6 @@ const VehicleAdmin = ({
               <td className="p-4 text-white font-display">${car.price.toLocaleString()}</td>
               <td className="p-4 text-right space-x-2">
                 <button onClick={() => onEdit(car)} className="p-2 text-slate-500 hover:text-rocket-500"><Edit className="w-4 h-4" /></button>
-                {/* Fix: use the correct 'onDelete' prop instead of the undefined 'handleDeleteCar' */}
                 <button onClick={() => onDelete(car.id)} className="p-2 text-slate-500 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
               </td>
             </tr>
@@ -240,7 +239,7 @@ const VehicleAdmin = ({
 // --- Main Application ---
 
 const App: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState<'home' | 'showroom' | 'compare' | 'admin' | 'events'>('home');
+  const [currentPage, setCurrentPage] = useState<'home' | 'showroom' | 'compare' | 'admin' | 'events' | 'service'>('home');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -307,10 +306,21 @@ const App: React.FC = () => {
   // --- Admin Logic ---
   const handleAdminLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (adminCreds.user === 'admin' && adminCreds.pass === 'rocket2024') {
+    
+    // Two sets of authorized admin credentials
+    const admins = [
+      { user: 'admin', pass: 'rocket2024' },
+      { user: 'specialist', pass: 'rocket_power' }
+    ];
+
+    const isAuthenticated = admins.some(
+      acc => acc.user === adminCreds.user && acc.pass === adminCreds.pass
+    );
+
+    if (isAuthenticated) {
       setIsAdminAuthenticated(true);
     } else {
-      alert("Invalid Clearance Level.");
+      alert("Invalid Clearance Level. Authorization Denied.");
     }
   };
 
@@ -409,6 +419,95 @@ const App: React.FC = () => {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
               {filteredCars.map(car => <CarCard key={car.id} car={car} onClick={() => setSelectedCar(car)} />)}
+            </div>
+          </div>
+        )}
+
+        {currentPage === 'service' && (
+          <div className="py-20 px-4 max-w-7xl mx-auto min-h-screen animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="text-center mb-20">
+              <span className="text-rocket-500 text-[10px] font-bold uppercase tracking-[0.5em] block mb-4">Maintenance & Care</span>
+              <h1 className="text-5xl md:text-6xl font-display font-bold text-white uppercase tracking-tight mb-6">Expert Services</h1>
+              <p className="text-slate-400 max-w-2xl mx-auto font-light leading-relaxed">Whether it's a concourse-level detail or specialized maintenance for your vintage machine, our specialists treat every vehicle as a piece of history.</p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+              {/* Rocket Detailing Studio */}
+              <div className="group relative bg-slate-900 border border-slate-800 overflow-hidden rounded-sm hover:border-rocket-500 transition-all duration-500">
+                <div className="h-80 overflow-hidden relative">
+                  <img 
+                    src="https://images.unsplash.com/photo-1601362840469-51e4d8d59085?q=80&w=2070&auto=format&fit=crop" 
+                    alt="Detailing Service" 
+                    className="w-full h-full object-cover opacity-50 group-hover:scale-105 transition-transform duration-1000 grayscale group-hover:grayscale-0"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent" />
+                  <div className="absolute top-6 left-6">
+                    <div className="bg-rocket-500 text-slate-950 p-3 rounded-full shadow-lg">
+                      <Sparkles className="w-6 h-6" />
+                    </div>
+                  </div>
+                </div>
+                <div className="p-10 -mt-20 relative z-10 bg-slate-900/90 backdrop-blur-md mx-6 mb-6 border border-slate-800 shadow-2xl">
+                  <h3 className="text-3xl font-display font-bold text-white uppercase mb-4">Rocket Detailing Studio</h3>
+                  <p className="text-slate-400 font-light mb-8 leading-relaxed">
+                    Elevate your vehicle's presence. Our studio specializes in high-end paint correction, ceramic coatings, and interior restorations using the finest tools and products.
+                  </p>
+                  <a 
+                    href="https://www.instagram.com/rocketmotorstudio/" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="inline-flex items-center gap-3 bg-rocket-500 text-slate-950 px-8 py-4 font-display font-bold uppercase tracking-wider hover:bg-white transition-all transform hover:translate-x-1"
+                  >
+                    <Instagram className="w-5 h-5" /> Visit Detailing Studio
+                  </a>
+                </div>
+              </div>
+
+              {/* Maintenance Program */}
+              <div className="group relative bg-slate-900 border border-slate-800 overflow-hidden rounded-sm hover:border-rocket-500 transition-all duration-500">
+                <div className="h-80 overflow-hidden relative">
+                  <img 
+                    src="https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?q=80&w=2072&auto=format&fit=crop" 
+                    alt="Maintenance Service" 
+                    className="w-full h-full object-cover opacity-50 group-hover:scale-105 transition-transform duration-1000 grayscale group-hover:grayscale-0"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent" />
+                  <div className="absolute top-6 left-6">
+                    <div className="bg-rocket-500 text-slate-950 p-3 rounded-full shadow-lg">
+                      <Shield className="w-6 h-6" />
+                    </div>
+                  </div>
+                </div>
+                <div className="p-10 -mt-20 relative z-10 bg-slate-900/90 backdrop-blur-md mx-6 mb-6 border border-slate-800 shadow-2xl">
+                  <h3 className="text-3xl font-display font-bold text-white uppercase mb-4">Exclusive Care Plan</h3>
+                  <div className="bg-rocket-500/10 border border-rocket-500/20 p-4 mb-6 inline-block">
+                    <p className="text-rocket-500 font-bold uppercase text-sm tracking-widest flex items-center gap-2">
+                       1 Year Free Service Included
+                    </p>
+                  </div>
+                  <p className="text-slate-400 font-light mb-8 leading-relaxed">
+                    Peace of mind comes standard. All our buyers and exclusive members receive one full year of complimentary scheduled maintenance and priority shop access.
+                  </p>
+                  <button onClick={() => handleNavigate('showroom')} className="inline-flex items-center gap-3 border-2 border-slate-700 text-white px-8 py-4 font-display font-bold uppercase tracking-wider hover:border-rocket-500 hover:text-rocket-500 transition-all">
+                    Explore Inventory <ArrowRight className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Service Features Row */}
+            <div className="mt-24 grid grid-cols-1 md:grid-cols-4 gap-8 border-t border-slate-800 pt-16">
+              {[
+                { title: "Oil & Fluids", desc: "Premium synthetic blends for classic and modern engines." },
+                { title: "Brake Systems", desc: "Complete overhaul and performance upgrades." },
+                { title: "Suspension", desc: "Restoring the original ride or modernizing for the track." },
+                { title: "Electrical", desc: "Expert troubleshooting for vintage wiring looms." }
+              ].map((f, idx) => (
+                <div key={idx} className="space-y-3">
+                  <h4 className="text-rocket-500 font-display font-bold uppercase">{f.title}</h4>
+                  <p className="text-slate-500 text-sm font-light">{f.desc}</p>
+                </div>
+              ))}
             </div>
           </div>
         )}
